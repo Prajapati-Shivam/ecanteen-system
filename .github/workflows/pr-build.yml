@@ -1,0 +1,36 @@
+name: PR Build Check (Client + Server)
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      # Install and build client
+      - name: Install client dependencies
+        working-directory: ./client
+        run: npm install
+
+      - name: Build client
+        working-directory: ./client
+        run: npm run build
+
+      # Install and test server
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Test server
+        working-directory: ./server
+        run: npm test
