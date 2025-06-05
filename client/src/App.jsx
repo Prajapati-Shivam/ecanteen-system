@@ -1,24 +1,24 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainLayout from './components/MainLayout';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainLayout from "./components/MainLayout";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Google from "./pages/Google";
+import "./App.css";
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path='/' element={<MainLayout />}>
-          <Route path='/' element={<Home />} />
-           <Route path='/login' element={<Login />} />
-          <Route path='/register' element={<Register />} /> 
+        <Route path="/" element={<MainLayout />}>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/GoogleSignin" element={<Google />} />
         </Route>
       </Routes>
     </Router>
   );
 }
 
-
 export default App;
-
