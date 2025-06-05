@@ -1,4 +1,4 @@
-import { useState } from "react";
+ import { useState } from "react";
 import {
   Box,
   Button,
@@ -7,10 +7,13 @@ import {
   Typography,
   Paper,
   Link,
+  Tabs,
+  Tab,
 } from "@mui/material";
 
 function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
+  const [userType, setUserType] = useState("college"); // 'college' or 'student'
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,15 +21,18 @@ function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    
-    console.log("Logging in with:", form);
+    console.log(`Logging in as ${userType} with:`, form);
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setUserType(newValue);
+    setForm({ email: "", password: "" });  
   };
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
-       
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -43,9 +49,23 @@ function Login() {
             backgroundColor: "rgba(255, 255, 255)",
           }}
         >
+          <Tabs
+            value={userType}
+            onChange={handleTabChange}
+            centered
+            variant="fullWidth"
+            textColor="primary"
+            indicatorColor="primary"
+            sx={{ mb: 3 }}
+          >
+            <Tab label="College" value="college" />
+            <Tab label="Student" value="student" />
+          </Tabs>
+
           <Typography variant="h5" align="center" gutterBottom>
-            College Login
+            {userType === "college" ? "College Login" : "Student Login"}
           </Typography>
+
           <form onSubmit={handleLogin}>
             <TextField
               label="Email"
@@ -77,9 +97,10 @@ function Login() {
               Log In
             </Button>
           </form>
+
           <Typography variant="body2" align="center" mt={3}>
-            New college?{" "}
-            <Link href="/register" underline="hover">
+            New {userType}?{" "}
+            <Link href={`/register`} underline="hover">
               Register here
             </Link>
           </Typography>
