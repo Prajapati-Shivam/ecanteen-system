@@ -1,9 +1,4 @@
- import {
-  SignIn,
-  SignedIn,
-  SignedOut,
-  UserButton,
-} from "@clerk/clerk-react";
+import { SignIn, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
@@ -43,18 +38,17 @@ function Google() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-      
+
         padding: "1rem",
       }}
     >
       <SignedOut>
-        <SignIn redirectUrl={window.location.pathname} />
+        <SignIn redirectUrl="/login" />
       </SignedOut>
 
       <SignedIn>
         <div
           style={{
-        
             padding: "2rem",
             borderRadius: "12px",
             boxShadow: "0 8px 24px rgba(0,0,0,0.1)",
