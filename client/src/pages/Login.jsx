@@ -1,4 +1,4 @@
- import { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -10,8 +10,10 @@ import {
   Tabs,
   Tab,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({ email: "", password: "" });
   const [userType, setUserType] = useState("college"); // 'college' or 'student'
 
@@ -26,7 +28,7 @@ function Login() {
 
   const handleTabChange = (event, newValue) => {
     setUserType(newValue);
-    setForm({ email: "", password: "" });  
+    setForm({ email: "", password: "" });
   };
 
   return (
@@ -66,37 +68,17 @@ function Login() {
             {userType === "college" ? "College Login" : "Student Login"}
           </Typography>
 
-          <form onSubmit={handleLogin}>
-            <TextField
-              label="Email"
-              type="email"
-              name="email"
-              required
-              value={form.email}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              required
-              value={form.password}
-              onChange={handleChange}
-              fullWidth
-              margin="normal"
-            />
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
-            >
-              Log In
-            </Button>
-          </form>
+          <Button
+            variant="contained"
+            onClick={() => {
+              navigate("/GoogleSignin");
+            }}
+            color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            Google Signin
+          </Button>
 
           <Typography variant="body2" align="center" mt={3}>
             New {userType}?{" "}
