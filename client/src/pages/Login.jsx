@@ -40,7 +40,7 @@ function Login() {
             p: 4,
             borderRadius: 3,
             backdropFilter: "blur(5px)",
-            backgroundColor: "rgba(255, 255, 255, 0.9)",
+            backgroundColor: "rgba(255, 255, 255)",
           }}
         >
           <Typography variant="h5" align="center" gutterBottom>
