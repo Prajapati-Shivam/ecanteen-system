@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { SignIn, useSignIn } from "@clerk/clerk-react";
 import {
   Box,
   Button,
@@ -8,13 +9,13 @@ import {
   Paper,
   Link,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 function Register() {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
-    phone: "",
-    password: "",
   });
 
   const handleChange = (e) => {
@@ -60,45 +61,19 @@ function Register() {
               value={form.name}
               onChange={handleChange}
             />
-            <TextField
-              label="Email"
-              type="email"
-              name="email"
-              required
-              fullWidth
-              margin="normal"
-              value={form.email}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Phone"
-              name="phone"
-              type="tel"
-              required
-              fullWidth
-              margin="normal"
-              value={form.phone}
-              onChange={handleChange}
-            />
-            <TextField
-              label="Password"
-              type="password"
-              name="password"
-              required
-              fullWidth
-              margin="normal"
-              value={form.password}
-              onChange={handleChange}
-            />
             <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
+              onClick={() => {
+                if (form.name.trim() === "") {
+                  alert("Kindly Enter your college name");
+                } else {
+                  localStorage.setItem("collegeName", form.name);
+                  navigate("/GoogleSignin");
+                }
+              }}
             >
-              Register
+              Google Sign In
             </Button>
+            {/* add clerk signin button here */}
           </form>
           <Typography variant="body2" align="center" mt={3}>
             Already have an account?{" "}
