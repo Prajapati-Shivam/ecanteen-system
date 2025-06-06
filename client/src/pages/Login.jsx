@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState } from 'react';
 import {
   Box,
   Button,
@@ -9,13 +9,13 @@ import {
   Link,
   Tabs,
   Tab,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
+} from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [userType, setUserType] = useState("college"); // 'college' or 'student'
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [userType, setUserType] = useState('college'); // 'college' or 'student'
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -28,64 +28,57 @@ function Login() {
 
   const handleTabChange = (event, newValue) => {
     setUserType(newValue);
-    setForm({ email: "", password: "" });
+    setForm({ email: '', password: '' });
   };
 
   return (
     <Box
       sx={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        minHeight: '80vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         py: 4,
       }}
     >
-      <Container maxWidth="sm">
+      <Container maxWidth='sm'>
         <Paper
           elevation={6}
           sx={{
             p: 4,
             borderRadius: 3,
-            backdropFilter: "blur(5px)",
-            backgroundColor: "rgba(255, 255, 255)",
+            backdropFilter: 'blur(5px)',
+            backgroundColor: 'rgba(255, 255, 255)',
           }}
         >
           <Tabs
             value={userType}
             onChange={handleTabChange}
             centered
-            variant="fullWidth"
-            textColor="primary"
-            indicatorColor="primary"
+            variant='fullWidth'
+            textColor='primary'
+            indicatorColor='primary'
             sx={{ mb: 3 }}
           >
-            <Tab label="College" value="college" />
-            <Tab label="Student" value="student" />
+            <Tab label='College' value='college' />
+            <Tab label='Student' value='student' />
           </Tabs>
 
-          <Typography variant="h5" align="center" gutterBottom>
-            {userType === "college" ? "College Login" : "Student Login"}
+          <Typography variant='h5' align='center' gutterBottom>
+            {userType === 'college' ? 'College Login' : 'Student Login'}
           </Typography>
 
           <Button
-            variant="contained"
+            variant='contained'
             onClick={() => {
-              navigate("/GoogleSignin");
+              navigate('/GoogleSignin');
             }}
-            color="primary"
+            color='primary'
             fullWidth
             sx={{ mt: 2 }}
           >
             Google Signin
           </Button>
-
-          <Typography variant="body2" align="center" mt={3}>
-            New {userType}?{" "}
-            <Link href={`/register`} underline="hover">
-              Register here
-            </Link>
-          </Typography>
         </Paper>
       </Container>
     </Box>
