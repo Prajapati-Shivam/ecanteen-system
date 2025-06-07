@@ -32,7 +32,7 @@ function UserForm() {
         alert("College id does not exist\n Enter an existing college id");
       } else if (response.data.success) {
         alert("✅ Student Registered Successfully!");
-        navigate("/dashboard");
+        navigate("/student");
       } else {
         alert("⚠️ Something went wrong: " + response.data.message);
       }
