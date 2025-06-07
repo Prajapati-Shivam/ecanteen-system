@@ -38,7 +38,7 @@ app.post("/loginD", async (req, res) => {
     if (existingAdmin) {
       return res.json({ exists: true, message: "Admin already exists" });
     } else {
-      const newAdmin = await Admin.create({
+      const newAdmin = await Admin.insertOne({
         college_name: Collegename,
         college_id: College_id,
         email: UserEmail,
