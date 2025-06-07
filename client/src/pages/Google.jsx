@@ -35,8 +35,7 @@ function Google() {
           console.log(random);
 
           // POST user details to backend
-          const response = await axios.post("http://localhost:3001/register", {
-            Collegename: collegename,
+          const response = await axios.post("http://localhost:3001/check", {
             UserName: user.fullName,
             UserEmail: user.primaryEmailAddress.emailAddress,
             College_id: random,
@@ -45,13 +44,12 @@ function Google() {
           // Handle various responses from backend
           if (response.data.exists === true) {
             alert("Email Already Exists");
-            navigate("/register"); // ⚠️ Consider using `navigate("/register")`
-          } else if (response.data.success === true) {
-            alert("You have been registered. Kindly login now!!!");
-            navigate("/login");
+            navigate("/dashboard"); // ⚠️ Consider using `navigate("/register")`
+          } else if (response.data.exists === false) {
+            navigate("/user-form");
           } else if (response.data.success === false) {
             alert("Server Down!\nTry after some time");
-            navigate("/register");
+            navigate("/");
           }
         } catch (error) {
           console.log(error);
@@ -59,9 +57,8 @@ function Google() {
       }
 
       // Only send details after user confirms by clicking "Yes"
-      if (yes === true) {
-        sendDetails();
-      }
+
+      sendDetails();
     }
   }, [user, isSignedIn, collegename, yes]);
 
@@ -94,7 +91,6 @@ function Google() {
         >
           <p>
             ✅ You are signed in! <br />
-            <strong>College:</strong> {collegename} <br />
             <strong>Name:</strong> {name} <br />
             <strong>Email:</strong> {email}
           </p>
@@ -106,19 +102,6 @@ function Google() {
         </div>
 
         {/* Confirmation section */}
-        <br />
-        <h4>Are you sure you want to use this Gmail account?</h4>
-        <br />
-        <button
-          onClick={() => {
-            setYes(true);
-          }}
-          style={{ background: "white", color: "black" }}
-        >
-          Yes
-        </button>
-        <br />
-        <h4>If not, click on the icon and sign out</h4>
       </SignedIn>
     </div>
   );
