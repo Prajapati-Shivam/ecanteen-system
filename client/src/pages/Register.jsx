@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SignIn, useSignIn } from '@clerk/clerk-react';
+
 import {
   Box,
   Button,
@@ -64,15 +64,18 @@ function Register() {
             <Button
               onClick={() => {
                 if (form.name.trim() === '') {
-                  alert('Kindly Enter your college name');
-                } else {
-                  localStorage.setItem('collegeName', form.name);
-                  navigate('/GoogleSignin');
+                  alert('Kindly enter your college name');
+                  return;
                 }
+
+                localStorage.setItem('collegeName', form.name);
+
+                navigate('/GoogleSignin');
               }}
             >
               Google Sign In
             </Button>
+
             {/* add clerk signin button here */}
           </form>
           <Typography variant='body2' align='center' mt={3}>
