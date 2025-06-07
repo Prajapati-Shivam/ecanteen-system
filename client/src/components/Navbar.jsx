@@ -1,19 +1,25 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CONSTANTS } from '../../lib/constant';
-
+import {
+  useUser,
+  UserButton,
+  SignedOut,
+  SignInButton,
+} from '@clerk/clerk-react';
+import { Button } from '@mui/material';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-
+  const { isSignedIn } = useUser();
   const toggleMenu = () => {
     setIsOpen(!isOpen);
   };
 
   const links = [
-    { name: 'Home', path: '/' },
-    { name: 'Register', path: '/register' },
-    { name: 'Login', path: '/login' },
+    // { name: 'Home', path: '/' },
+    // { name: 'Register', path: '/register' },
+    // { name: 'Login', path: '/login' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -77,7 +83,7 @@ const Navbar = () => {
               }`}
               id='navbar-default'
             >
-              <ul className='font-medium flex flex-col md:flex-row md:space-x-6 mt-4 md:mt-0 text-black'>
+              <ul className='font-medium flex flex-col md:flex-row md:space-x-5 mt-4 md:mt-0 text-black'>
                 {links.map((link) => (
                   <li key={link.name}>
                     <Link
@@ -93,6 +99,39 @@ const Navbar = () => {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  {isSignedIn ? (
+                    <div className='flex items-center space-x-5'>
+                      <Link
+                        to='/dashboard'
+                        className='block py-2 px-4 rounded transition-all duration-300 hover:bg-black hover:text-white'
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Dashboard
+                      </Link>
+                      <UserButton
+                        userProfileMode='navigation'
+                        appearance={{
+                          elements: {
+                            userButtonAvatarBox: 'w-10 h-10',
+                            userButtonAvatarImage: 'w-10 h-10 rounded-full',
+                          },
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <SignedOut>
+                      <SignInButton
+                        mode='modal'
+                        fallbackRedirectUrl={'/user-form'}
+                      >
+                        <Button variant='contained' color='primary'>
+                          Login
+                        </Button>
+                      </SignInButton>
+                    </SignedOut>
+                  )}
+                </li>
               </ul>
             </div>
           </div>

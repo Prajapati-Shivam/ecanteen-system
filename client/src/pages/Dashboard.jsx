@@ -6,6 +6,7 @@ import ViewFoodItems from '../components/Food/ViewFoodItems';
 import SearchFoodItems from '../components/Food/SearchFoodItems';
 
 function Dashboard() {
+  // check if the user is admin otherwise redirect to home page
   const [tab, setTab] = useState('create');
 
   const [foodForm, setFoodForm] = useState({

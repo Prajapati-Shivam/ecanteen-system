@@ -1,5 +1,6 @@
 import React from 'react';
 import { Button, Container, Typography, Box } from '@mui/material';
+import { CONSTANTS } from '../../lib/constant';
 
 export default function Home() {
   const features = [
@@ -31,14 +32,13 @@ export default function Home() {
           >
             Welcome to{' '}
             <span className='bg-clip-text text-transparent bg-gradient-to-tr from-green-500 to-blue-600'>
-              E-Canteen
+              {CONSTANTS.APP_NAME}
             </span>
           </Typography>
 
           {/* Subtitle */}
           <p className='mt-4 text-gray-300 text-lg md:text-xl mx-auto max-w-2xl text-center'>
-            Your one-stop solution for hassle-free campus dining. Order food
-            online, pay securely, and enjoy delicious meals without the wait.
+            {CONSTANTS.APP_DESCRIPTION}
           </p>
 
           {/* Buttons */}
@@ -48,7 +48,7 @@ export default function Home() {
               size='large'
               className='bg-gradient-to-tr from-green-500 to-blue-600 text-white px-6 shadow-sm hover:shadow-md transition'
             >
-              Start Ordering
+              Get Started
             </Button>
             <Button
               variant='outlined'
