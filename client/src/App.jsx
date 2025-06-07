@@ -4,7 +4,7 @@ import Home from './pages/Home';
 import './App.css';
 import Dashboard from './pages/Dashboard';
 import UserForm from './pages/UserForm';
-import AboutUs from './pages/AboutUS';
+import About from './pages/About';
 
 function App() {
   return (
@@ -14,7 +14,7 @@ function App() {
           <Route path='/' element={<Home />} />
           <Route path='/user-form' element={<UserForm />} />
           <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/aboutus' element={<AboutUs />} />
+          <Route path='/about' element={<About />} />
         </Route>
       </Routes>
     </Router>

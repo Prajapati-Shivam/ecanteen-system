@@ -47,7 +47,7 @@ const teamMembers = [
   },
 ];
 
-function AboutUs() {
+function About() {
   return (
     <section className="text-gray-400  body-font">
       <div className="container px-5 py-24 mx-auto">
@@ -105,4 +105,4 @@ function AboutUs() {
   );
 }
 
-export default AboutUs;
+export default About;
