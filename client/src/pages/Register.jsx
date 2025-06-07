@@ -1,5 +1,5 @@
+// React and MUI hooks/components
 import { useState } from "react";
-
 import {
   Box,
   Button,
@@ -13,19 +13,33 @@ import { useNavigate } from "react-router-dom";
 
 function Register() {
   const navigate = useNavigate();
+
+  // State to hold form data (currently only college name and email)
   const [form, setForm] = useState({
     name: "",
     email: "",
   });
 
+  // Handle text field changes (update form state)
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleRegister = (e) => {
     e.preventDefault();
-    // TODO: Connect to backend API to create a new college
-    console.log("Registering college with:", form);
+
+    // Simple validation: check if college name is empty
+    if (form.name.trim() === "") {
+      alert("Kindly enter your college name");
+      return;
+    }
+
+    // Save college name locally for future use (e.g. sending to backend)
+    localStorage.setItem("collegeName", form.name);
+
+    // Navigate to Google SignIn page (Clerk will handle the rest)
+    navigate("/GoogleSignin");
   };
 
   return (
@@ -51,6 +65,8 @@ function Register() {
           <Typography variant="h5" align="center" gutterBottom>
             College Registration
           </Typography>
+
+          {/* Form for collecting college name */}
           <form onSubmit={handleRegister}>
             <TextField
               label="College Name"
@@ -61,23 +77,14 @@ function Register() {
               value={form.name}
               onChange={handleChange}
             />
-            <Button
-              onClick={() => {
-                if (form.name.trim() === "") {
-                  alert("Kindly enter your college name");
-                  return;
-                }
 
-                localStorage.setItem("collegeName", form.name);
+            {/* Redirects to Clerk Google SignIn via /GoogleSignin */}
+            <Button onClick={handleRegister}>Google Sign In</Button>
 
-                navigate("/GoogleSignin");
-              }}
-            >
-              Google Sign In
-            </Button>
-
-            {/* add clerk signin button here */}
+            {/* You can place Clerk SignIn button here if needed */}
           </form>
+
+          {/* Navigation for existing users */}
           <Typography variant="body2" align="center" mt={3}>
             Already have an account?{" "}
             <Link href="/login" underline="hover">
