@@ -2,12 +2,15 @@ import { SignIn, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { useUser } from "@clerk/clerk-react";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function Google() {
+  const navigate = useNavigate();
   const collegename = localStorage.getItem("collegeName");
   const { user, isSignedIn } = useUser();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [yes, setYes] = useState(false);
 
   useEffect(() => {
     if (user && isSignedIn) {
@@ -16,20 +19,32 @@ function Google() {
 
       async function sendDetails() {
         try {
+          const random = Math.floor(Math.random() * 10000);
+          console.log(random);
           const response = await axios.post("http://localhost:3001/loginD", {
             Collegename: collegename,
             UserName: user.fullName,
             UserEmail: user.primaryEmailAddress.emailAddress,
+            College_id: random,
           });
-          console.log(response);
+          if (response.data.exists == true) {
+            alert("Email Already Exists");
+            window.location = "/register";
+          } else if (response.data.success == true) {
+            alert("You have been registered. Kindly login now!!!");
+            window.location = "/login";
+          } else if (response.data.success == false) {
+            alert("Server Down!. \nTry after some time");
+          }
         } catch (error) {
           console.log(error);
         }
       }
-
-      sendDetails();
+      if (yes == true) {
+        sendDetails();
+      }
     }
-  }, [user, isSignedIn, collegename]);
+  }, [user, isSignedIn, collegename, yes]);
 
   return (
     <div
@@ -43,9 +58,8 @@ function Google() {
       }}
     >
       <SignedOut>
-        <SignIn redirectUrl="/login" />
+        <SignIn redirectUrl="/GoogleSignin" />
       </SignedOut>
-
       <SignedIn>
         <div
           style={{
@@ -67,6 +81,20 @@ function Google() {
             <UserButton afterSignOutUrl="/register" />
           </div>
         </div>
+        <br />
+        <br /> <br />
+        <h4>Are you sure you want to use this gmail account?</h4>
+        <br />
+        <button
+          onClick={() => {
+            setYes(true);
+          }}
+          style={{ background: "white", color: "black" }}
+        >
+          Yes
+        </button>{" "}
+        <br />
+        <h4>If not click on the icon and signout</h4>
       </SignedIn>
     </div>
   );
