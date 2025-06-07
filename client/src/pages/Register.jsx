@@ -13,15 +13,19 @@ import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const navigate = useNavigate();
+
+  // State to hold form data (currently only college name and email)
   const [form, setForm] = useState({
     name: '',
     email: '',
   });
 
+  // Handle text field changes (update form state)
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // Handle form submission
   const handleRegister = (e) => {
     e.preventDefault();
     // TODO: Connect to backend API to create a new college
@@ -51,6 +55,8 @@ function Register() {
           <Typography variant='h5' align='center' gutterBottom>
             College Registration
           </Typography>
+
+          {/* Form for collecting college name */}
           <form onSubmit={handleRegister}>
             <TextField
               label='College Name'
@@ -76,7 +82,7 @@ function Register() {
               Google Sign In
             </Button>
 
-            {/* add clerk signin button here */}
+            {/* You can place Clerk SignIn button here if needed */}
           </form>
           <Typography variant='body2' align='center' mt={3}>
             Already have an account?{' '}
