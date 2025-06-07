@@ -7,6 +7,9 @@ import Google from "./pages/Google";
 import "./App.css";
 import Dashboard from "./pages/Dashboard";
 
+
+import AboutUs from "./pages/AboutUS";
+
 function App() {
   return (
     <Router>
@@ -17,6 +20,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/GoogleSignin" element={<Google />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/aboutus" element={<AboutUs />} />
         </Route>
       </Routes>
     </Router>
