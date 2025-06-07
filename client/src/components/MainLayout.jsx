@@ -3,15 +3,14 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import { Outlet } from 'react-router-dom';
 
-
 const MainLayout = () => {
   return (
     <>
-     <Navbar />
-      <main className="min-h-screen p-4">
+      <Navbar />
+      <main className='min-h-screen p-4 pt-28'>
         <Outlet />
       </main>
-     <Footer /> 
+      <Footer />
     </>
   );
 };
