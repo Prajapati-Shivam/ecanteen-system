@@ -16,7 +16,6 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/user-form" element={<UserForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/googlesignIn" element={<GooglesignIn />} />
           <Route path="/about" element={<About />} />
           <Route path="/student" element={<Student />} />
         </Route>

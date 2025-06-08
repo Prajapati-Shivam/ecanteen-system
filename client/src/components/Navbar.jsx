@@ -123,7 +123,7 @@ const Navbar = () => {
                     <SignedOut>
                       <SignInButton
                         mode="modal"
-                        fallbackRedirectUrl={"/googlesignIn"}
+                        fallbackRedirectUrl={"/user-form"}
                       >
                         <Button variant="contained" color="primary">
                           Login

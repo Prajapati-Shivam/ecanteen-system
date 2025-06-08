@@ -11,6 +11,42 @@ function UserForm() {
   const navigate = useNavigate();
   const [role, setRole] = useState("");
   const [inputValue, setInputValue] = useState("");
+  // Generate random ID for college
+  const random = Math.floor(Math.random() * 10000);
+
+  useEffect(() => {
+    // When user is signed in and user data is available
+    if (user && isSignedIn) {
+      // Function to send user details to backend
+      async function sendDetails() {
+        try {
+          // POST user details to backend
+          const response = await axios.post("http://localhost:3001/check", {
+            UserName: user.fullName,
+            UserEmail: user.primaryEmailAddress.emailAddress,
+            College_id: random,
+          });
+
+          // Handle various responses from backend
+          if (response.data.exists === true) {
+            alert("Email Already Exists");
+            navigate("/dashboard"); // ⚠️ Consider using `navigate("/register")`
+          } else if (response.data.exists === false) {
+            navigate("/user-form");
+          } else if (response.data.success === false) {
+            alert("Server Down!\nTry after some time");
+            navigate("/");
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      }
+
+      // Only send details after user confirms by clicking "Yes"
+
+      sendDetails();
+    }
+  }, [user, isSignedIn, inputValue]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,9 +74,6 @@ function UserForm() {
       }
     } else {
       try {
-        const random = Math.floor(Math.random() * 10000);
-        console.log("Generated College ID:", random);
-
         const response = await axios.post(
           "http://localhost:3001/insertDetailsAdmin",
           {
