@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Box, Container, Paper, Typography, Tabs, Tab } from '@mui/material';
+import { Box, Container, Paper, Typography, Tabs, Tab, Snackbar, Alert } from '@mui/material';
 
 import AddFoodForm from "../components/Food/AddFoodForm";
 import ViewFoodItems from "../components/Food/ViewFoodItems";
@@ -30,7 +30,6 @@ function Dashboard() {
 
   const handleAddFood = async () => {
     const { college_id, name, price, category, veg, image } = foodForm;
-    // console.log('Adding food item:', foodForm);
     if (college_id && name && price && category && image && (veg !== undefined)) {
       try {
         const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/addItem`, {
@@ -39,10 +38,12 @@ function Dashboard() {
           price: parseFloat(price),
           category,
           image,
-          veg: veg
-        })
+          veg
+        });
 
-        alert('Food item added successfully!');
+        setMessage('Food item added successfully!');
+        setSeverity('success');
+        setOpen(true);
 
         setFoodItems([...foodItems, { ...foodForm, id: res.data.item_id, availability: true }]);
         setFoodForm({
@@ -55,16 +56,19 @@ function Dashboard() {
         });
       } catch (err) {
         console.error('Error adding food item:', err);
-        alert('Failed to add food item. Please try again later.');
+        setMessage('Failed to add food item. Please try again later.');
+        setSeverity('error');
+        setOpen(true);
       }
     } else {
-      alert('Please fill all required fields!');
+      setMessage('Please fill all required fields!');
+      setSeverity('error');
+      setOpen(true);
     }
   };
 
   const fetchItems = async (college_id) => {
     const filter_query = "";
-    //Working over ..add the filter logic
     const items = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/fetchItems?college_id=${college_id}${filter_query}`);
     console.log('Fetched items:', items.data);
 
@@ -77,12 +81,12 @@ function Dashboard() {
     } else {
       setFoodItems([]);
     }
-
-  }
+  };
 
   useEffect(() => {
     fetchItems('3523');
-  }, [])
+  }, []);
+
   return (
     <Box
       sx={{
@@ -146,30 +150,26 @@ function Dashboard() {
         </Paper>
       </Container>
 
-     <Snackbar
-  open={open}
-  autoHideDuration={3000}
-  onClose={() => setOpen(false)}
-  anchorOrigin={{ vertical: "top", horizontal: "center" }}
->
-  <Alert
-    severity={severity}
-    onClose={() => setOpen(false)}
-    sx={{
-      fontSize: "1rem",
-      width: "100%",
-      border: "1px solid",
-      borderColor: "divider", // or a specific color like '#ccc' or 'grey.300'
-      borderRadius: "4px",     // optional: to keep it soft-looking
-    }}
-  >
-    {message}
-  </Alert>
-</Snackbar>
-
-
-
-
+      <Snackbar
+        open={open}
+        autoHideDuration={3000}
+        onClose={() => setOpen(false)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity={severity}
+          onClose={() => setOpen(false)}
+          sx={{
+            fontSize: "1rem",
+            width: "100%",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: "4px",
+          }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
