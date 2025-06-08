@@ -6,10 +6,10 @@ const teamMembers = [
     role: "Full Stack Developer",
     avatar: "https://ui-avatars.com/api/?name=Ritesh+More&background=random",
     social: {
-      github: "#",
-      linkedin: "#",
-      instagram: "#",
-      leetcode: "#",
+      github: "https://github.com/moarray28",
+      linkedin: "https://www.linkedin.com/in/riteshmore28/",
+      instagram: "https://www.instagram.com/moarray/",
+      leetcode: "https://leetcode.com/u/morray28/",
     },
   },
   {
