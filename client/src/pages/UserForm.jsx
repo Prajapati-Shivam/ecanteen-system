@@ -22,7 +22,7 @@ function UserForm() {
         try {
           // POST user details to backend
           const response = await axios.post(
-            "http://localhost:3001/api/admin/check",
+            `${import.meta.env.VITE_API_URL}/api/auth/check`,
             {
               UserName: user.fullName,
               UserEmail: user.primaryEmailAddress.emailAddress,
@@ -59,7 +59,7 @@ function UserForm() {
 
     if (role !== "admin") {
       const response = await axios.post(
-        "http://localhost:3001/api/admin/addUser",
+        `${import.meta.env.VITE_API_URL}/api/auth/addUser`,
         {
           UserName: user.fullName,
           UserEmail: user.primaryEmailAddress.emailAddress,
@@ -78,7 +78,7 @@ function UserForm() {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:3001/api/admin/addAdmin",
+          `${import.meta.env.VITE_API_URL}/api/auth/addAdmin`,
           {
             Collegename: inputValue,
             UserName: user.fullName,

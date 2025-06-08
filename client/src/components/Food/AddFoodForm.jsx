@@ -21,6 +21,14 @@ const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
   return (
     <Box>
       <TextField
+        label='College ID'
+        name='college_id'
+        fullWidth
+        margin='normal'
+        value={foodForm.college_id}
+        onChange={handleFoodChange}
+      />
+      <TextField
         label='Food Name'
         name='name'
         fullWidth
