@@ -21,11 +21,14 @@ function UserForm() {
       async function sendDetails() {
         try {
           // POST user details to backend
-          const response = await axios.post("http://localhost:3001/check", {
-            UserName: user.fullName,
-            UserEmail: user.primaryEmailAddress.emailAddress,
-            College_id: random,
-          });
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_URL}/api/auth/check`,
+            {
+              UserName: user.fullName,
+              UserEmail: user.primaryEmailAddress.emailAddress,
+              College_id: random,
+            }
+          );
 
           // Handle various responses from backend
           if (response.data.exists === true) {
@@ -56,7 +59,7 @@ function UserForm() {
 
     if (role !== "admin") {
       const response = await axios.post(
-        "http://localhost:3001/insertDetailsUser",
+        `${import.meta.env.VITE_API_URL}/api/auth/addUser`,
         {
           UserName: user.fullName,
           UserEmail: user.primaryEmailAddress.emailAddress,
@@ -75,7 +78,7 @@ function UserForm() {
     } else {
       try {
         const response = await axios.post(
-          "http://localhost:3001/insertDetailsAdmin",
+          `${import.meta.env.VITE_API_URL}/api/auth/addAdmin`,
           {
             Collegename: inputValue,
             UserName: user.fullName,
