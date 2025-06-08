@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Box, Container, Paper, Typography, Tabs, Tab } from "@mui/material";
-import { Snackbar, Alert } from "@mui/material";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Box, Container, Paper, Typography, Tabs, Tab } from '@mui/material';
 
 import AddFoodForm from "../components/Food/AddFoodForm";
 import ViewFoodItems from "../components/Food/ViewFoodItems";
@@ -28,29 +28,61 @@ function Dashboard() {
 
   const handleTabChange = (event, newValue) => setTab(newValue);
 
-const handleAddFood = () => {
-  const { college_id, name, price, category } = foodForm;
+  const handleAddFood = async () => {
+    const { college_id, name, price, category, veg, image } = foodForm;
+    // console.log('Adding food item:', foodForm);
+    if (college_id && name && price && category && image && (veg !== undefined)) {
+      try {
+        const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/addItem`, {
+          college_id,
+          name,
+          price: parseFloat(price),
+          category,
+          image,
+          veg: veg
+        })
 
-  if (college_id && name && price && category) {
-    setFoodItems([...foodItems, { ...foodForm, id: Date.now() }]);
-    setFoodForm({
-      college_id: '',
-      name: '',
-      image: '',
-      price: '',
-      veg: true,
-      category: '',
-    });
-    setMessage('Food item added!');
-    setSeverity('success');
-  } else {
-    setMessage('Please fill all required fields!');
-    setSeverity('error');
+        alert('Food item added successfully!');
+
+        setFoodItems([...foodItems, { ...foodForm, id: res.data.item_id, availability: true }]);
+        setFoodForm({
+          college_id: '',
+          name: '',
+          image: '',
+          price: '',
+          veg: true,
+          category: '',
+        });
+      } catch (err) {
+        console.error('Error adding food item:', err);
+        alert('Failed to add food item. Please try again later.');
+      }
+    } else {
+      alert('Please fill all required fields!');
+    }
+  };
+
+  const fetchItems = async (college_id) => {
+    const filter_query = "";
+    //Working over ..add the filter logic
+    const items = await axios.get(`${import.meta.env.VITE_API_URL}/api/admin/fetchItems?college_id=${college_id}${filter_query}`);
+    console.log('Fetched items:', items.data);
+
+    if (items.data.items && items.data.items.length > 0) {
+      const transformedItems = items.data.items.map(({ _id, ...rest }) => ({
+        id: _id,
+        ...rest,
+      }));
+      setFoodItems(transformedItems);
+    } else {
+      setFoodItems([]);
+    }
+
   }
-  setOpen(true);
-};
 
-
+  useEffect(() => {
+    fetchItems('3523');
+  }, [])
   return (
     <Box
       sx={{

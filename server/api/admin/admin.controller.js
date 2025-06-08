@@ -9,9 +9,9 @@ const { Item } = require("../../models");
 
 const addItem = async (req, res) => {
   //Body - { college_id, name, price, category, image, type }
-  const { college_id, name, price, category, image, type } = req.body;
+  const { college_id, name, price, category, image, veg } = req.body;
 
-  if (!name || !price || !category || !image || !type) {
+  if (!name || !price || !category || !image || veg === undefined) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -20,7 +20,7 @@ const addItem = async (req, res) => {
     name: name,
     image: image,
     price: price,
-    veg: type.toLowerCase() === "true",
+    veg: veg,
     category: category,
     availability: true, // Default to true, can be updated later
   });
@@ -33,7 +33,7 @@ const addItem = async (req, res) => {
   // Logic to add an item
   console.log(`Item added successfully - ${name} for college ${college_id}`);
 
-  res.status(200).json({ message: "Item added successfully" });
+  res.status(200).json({ item_id: newItem._id, message: "Item added successfully" });
 };
 
 const fetchItems = async (req, res) => {
@@ -41,7 +41,7 @@ const fetchItems = async (req, res) => {
   const {
     filter_name,
     filter_category,
-    filter_type,
+    filter_veg,
     filter_price,
     filter_availability,
     filter_sort,
@@ -57,20 +57,12 @@ const fetchItems = async (req, res) => {
 
   if (filter_name) filter.name = { $regex: filter_name, $options: "i" }; //'i' to match lowercase and uppercase
   if (filter_category) filter.category = filter_category;
-  if (filter_type) filter.veg = filter_type.toLowerCase() === "true";
+  if (filter_veg) filter.veg = filter_veg;
   if (filter_availability)
     filter.availability = filter_availability.toLowerCase() === "true";
   if (filter_price) {
     const [minPrice, maxPrice] = filter_price.split("-").map(Number);
-    if (
-      !(
-        isNaN(minPrice) ||
-        isNaN(maxPrice) ||
-        minPrice < 0 ||
-        maxPrice < 0 ||
-        minPrice > maxPrice
-      )
-    )
+    if (!(isNaN(minPrice) || isNaN(maxPrice) || minPrice < 0 || maxPrice < 0 || minPrice > maxPrice))
       filter.price = { $gte: minPrice, $lte: maxPrice };
   }
 
@@ -135,14 +127,14 @@ const deleteItem = async (req, res) => {
 };
 
 const updateItem = async (req, res) => {
-  const { item_id, name, price, category, image, type, availability } =
+  const { item_id, name, price, category, image, veg, availability } =
     req.body;
 
   if (!item_id) {
     return res.status(400).json({ message: "Item ID is required" });
   }
 
-  if (!name || !price || !category || !image || !type) {
+  if (!name || !price || !category || !image || !veg) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
@@ -151,7 +143,7 @@ const updateItem = async (req, res) => {
     price: price,
     category: category,
     image: image,
-    veg: type.toLowerCase() === "true",
+    veg: veg,
     availability: availability,
   };
   try {
