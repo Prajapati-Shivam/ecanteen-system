@@ -5,7 +5,6 @@ import "./App.css";
 import Dashboard from "./pages/Dashboard";
 import UserForm from "./pages/UserForm";
 import About from "./pages/About";
-import GooglesignIn from "./pages/Google";
 import Student from "./pages/Student";
 
 function App() {
@@ -16,7 +15,6 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/user-form" element={<UserForm />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/googlesignIn" element={<GooglesignIn />} />
           <Route path="/about" element={<About />} />
           <Route path="/student" element={<Student />} />
         </Route>
