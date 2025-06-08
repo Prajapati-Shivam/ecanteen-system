@@ -20,7 +20,7 @@ const addItem = async (req, res) => {
         name: name,
         image: image,
         price: price,
-        veg: type.toLowerCase() === 'veg',
+        veg: type.toLowerCase() === 'true',
         category: category,
         availability: true // Default to true, can be updated later
     })
@@ -49,7 +49,7 @@ const fetchItems = async (req, res) => {
 
     if (filter_name) filter.name = { $regex: filter_name, $options: 'i' }; //'i' to match lowercase and uppercase
     if (filter_category) filter.category = filter_category;
-    if (filter_type) filter.veg = filter_type.toLowerCase() === 'veg';
+    if (filter_type) filter.veg = filter_type.toLowerCase() === 'true';
     if (filter_availability) filter.availability = filter_availability.toLowerCase() === 'true';
     if (filter_price) {
         const [minPrice, maxPrice] = filter_price.split('-').map(Number);
@@ -126,7 +126,7 @@ const updateItem = async (req, res) => {
         price: price,
         category: category,
         image: image,
-        veg: type.toLowerCase() === 'veg',
+        veg: type.toLowerCase() === 'true',
         availability: availability
     }
     try {

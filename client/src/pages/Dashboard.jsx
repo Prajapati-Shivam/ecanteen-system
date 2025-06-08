@@ -24,7 +24,8 @@ function Dashboard() {
   const handleTabChange = (event, newValue) => setTab(newValue);
 
   const handleAddFood = () => {
-    const { college_id, name, price, category } = foodForm;
+    const { college_id, name, price, category, veg, image } = foodForm;
+    console.log('Adding food item:', foodForm);
     if (college_id && name && price && category) {
       setFoodItems([...foodItems, { ...foodForm, id: Date.now() }]);
       setFoodForm({
