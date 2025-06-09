@@ -48,7 +48,8 @@ function Dashboard() {
           sx={{ mb: 3 }}
         >
           📊 Coming Soon: Analytics Dashboard!<br />
-          Role : {user?.publicMetadata?.role}
+          Role : {user?.publicMetadata?.role}<br />
+          College ID : {user?.publicMetadata?.college_id}
         </Typography>
       </Container>
     </Box>

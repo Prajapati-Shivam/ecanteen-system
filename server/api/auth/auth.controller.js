@@ -48,6 +48,7 @@ const addAdmin = async (req, res) => {
       try {
         await clerkClient.users.updateUserMetadata(userId, {
           publicMetadata: {
+            college_id: College_id,
             role: "admin",
           },
         });
@@ -97,6 +98,7 @@ const addUser = async (req, res) => {
         try {
           await clerkClient.users.updateUserMetadata(userId, {
             publicMetadata: {
+              college_id: College_id,
               role: "student",
             },
           });
