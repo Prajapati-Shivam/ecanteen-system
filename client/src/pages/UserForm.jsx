@@ -1,185 +1,183 @@
- import { SignIn, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
-import { useUser } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import { Snackbar, Alert } from "@mui/material";
+import { SignIn, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
+import { useUser } from '@clerk/clerk-react';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import {
+  Snackbar,
+  Alert,
+  Box,
+  Typography,
+  Radio,
+  RadioGroup,
+  FormControl,
+  FormControlLabel,
+  FormLabel,
+  TextField,
+  Button,
+  Paper,
+} from '@mui/material';
+import adminImg from '../assets/user-form-admin.svg';
+import userImg from '../assets/user-form-user.svg';
 
 function UserForm() {
   const { user, isSignedIn } = useUser();
   const navigate = useNavigate();
-  const [role, setRole] = useState("");
-  const [inputValue, setInputValue] = useState("");
+  const [role, setRole] = useState('student');
+  const [inputValue, setInputValue] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
-  const random = Math.floor(Math.random() * 10000);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const randomId = Math.floor(Math.random() * 10000);
 
   useEffect(() => {
     if (user && isSignedIn) {
-      async function sendDetails() {
+      (async () => {
         try {
-          const response = await axios.post(
+          const { data } = await axios.post(
             `${import.meta.env.VITE_API_URL}/api/auth/check`,
             {
               UserName: user.fullName,
               UserEmail: user.primaryEmailAddress.emailAddress,
-              College_id: random,
+              College_id: randomId,
             }
           );
 
-          if (response.data.exists === true) {
-            setSnackbarMessage("Email Already Exists");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true);
-            navigate("/dashboard");
-          } else if (response.data.exists === false) {
-            navigate("/user-form");
-          } else if (response.data.success === false) {
-            setSnackbarMessage("Server Down! Try after some time");
-            setSnackbarSeverity("error");
-            setOpenSnackbar(true);
-            navigate("/");
+          if (data.exists) {
+            setSnackbar('Email Already Exists', 'error');
+            navigate('/dashboard');
+          } else if (data.success === false) {
+            setSnackbar('Server Down! Try after some time', 'error');
+            navigate('/');
           }
         } catch (error) {
-          console.log(error);
+          console.error('Check error:', error);
         }
-      }
-      sendDetails();
+      })();
     }
-  }, [user, isSignedIn, inputValue]);
+  }, [user, isSignedIn]);
+
+  const setSnackbar = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setOpenSnackbar(true);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (role !== "admin") {
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/auth/addUser`,
-        {
-          UserName: user.fullName,
-          UserEmail: user.primaryEmailAddress.emailAddress,
-          College_id: inputValue,
-        }
-      );
-
-      if (response.data.college_id_exists === false) {
-        setSnackbarMessage("College id does not exist. Enter an existing college id");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      } else if (response.data.success) {
-        setSnackbarMessage("✅ Student Registered Successfully!");
-        setSnackbarSeverity("success");
-        setOpenSnackbar(true);
-        navigate("/student");
-      } else {
-        setSnackbarMessage("⚠️ Something went wrong: " + response.data.message);
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
-      }
-    } else {
-      try {
-        const response = await axios.post(
+    try {
+      if (role === 'admin') {
+        const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/auth/addAdmin`,
           {
             Collegename: inputValue,
             UserName: user.fullName,
             UserEmail: user.primaryEmailAddress.emailAddress,
-            College_id: random,
+            College_id: randomId,
           }
         );
 
-        if (response.data.success) {
-          setSnackbarMessage("🎉 Admin Registered Successfully!");
-          setSnackbarSeverity("success");
-          setOpenSnackbar(true);
-          navigate("/dashboard");
+        if (data.success) {
+          setSnackbar('🎉 Admin Registered Successfully!', 'success');
+          navigate('/dashboard');
         } else {
-          setSnackbarMessage("⚠️ Something went wrong: " + response.data.message);
-          setSnackbarSeverity("error");
-          setOpenSnackbar(true);
+          setSnackbar('⚠️ ' + data.message, 'error');
         }
-      } catch (error) {
-        console.log("API error:", error);
-        setSnackbarMessage("❌ Server Error! Try again later.");
-        setSnackbarSeverity("error");
-        setOpenSnackbar(true);
+      } else {
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_API_URL}/api/auth/addUser`,
+          {
+            UserName: user.fullName,
+            UserEmail: user.primaryEmailAddress.emailAddress,
+            College_id: inputValue,
+          }
+        );
+
+        if (!data.college_id_exists) {
+          setSnackbar('College ID does not exist', 'error');
+        } else if (data.success) {
+          setSnackbar('✅ Student Registered Successfully!', 'success');
+          navigate('/student');
+        } else {
+          setSnackbar('⚠️ ' + data.message, 'error');
+        }
       }
+    } catch (error) {
+      console.error('Submit error:', error);
+      setSnackbar('❌ Server Error! Try again later.', 'error');
     }
   };
 
   return (
-    <div>
-      <h1>This is a demo form</h1>
-      <div>
-        <label>
-          <input
-            type="radio"
-            name="role"
-            value="admin"
-            checked={role === "admin"}
-            onChange={() => {
-              setRole("admin");
-              setInputValue("");
+    <Box
+      display='flex'
+      flexDirection='column'
+      alignItems='center'
+      justifyContent='center'
+      minHeight='80vh'
+      px={2}
+    >
+      <Paper elevation={4} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+        <Typography variant='h5' gutterBottom textAlign='center'>
+          Complete Your Registration
+        </Typography>
+        <img
+          src={role == 'admin' ? adminImg : userImg}
+          alt='User Form'
+          style={{ width: '100%', height: 'auto', marginBottom: '16px' }}
+        />
+        <FormControl component='fieldset' fullWidth sx={{ mb: 2 }}>
+          <FormLabel>Select Role</FormLabel>
+          <RadioGroup
+            row
+            defaultValue={'student'}
+            onChange={(e) => {
+              setRole(e.target.value);
+              setInputValue('');
             }}
-          />
-          Admin
-        </label>
-        <label style={{ marginLeft: "1rem" }}>
-          <input
-            type="radio"
-            name="role"
-            value="student"
-            checked={role === "student"}
-            onChange={() => {
-              setRole("student");
-              setInputValue("");
-            }}
-          />
-          Student
-        </label>
-      </div>
+          >
+            <FormControlLabel value='admin' control={<Radio />} label='Admin' />
+            <FormControlLabel
+              value='student'
+              control={<Radio />}
+              label='Student'
+            />
+          </RadioGroup>
+        </FormControl>
 
-      {role && (
-        <form onSubmit={handleSubmit}>
-          <div>
-            <label htmlFor="input">
-              {role === "admin" ? "College Name:" : "College ID:"}
-            </label>
-            <input
-              type="text"
-              id="input"
+        {role && (
+          <form onSubmit={handleSubmit}>
+            <TextField
+              label={role === 'admin' ? 'College Name' : 'College ID'}
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              style={{ color: "black" }}
               required
+              fullWidth
+              sx={{ mb: 2 }}
             />
-          </div>
-          <button type="submit">Submit</button>
-        </form>
-      )}
+            <Button type='submit' variant='contained' color='primary' fullWidth>
+              Submit
+            </Button>
+          </form>
+        )}
+      </Paper>
 
-      {/* Toast notification */}
       <Snackbar
         open={openSnackbar}
         autoHideDuration={4000}
         onClose={() => setOpenSnackbar(false)}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setOpenSnackbar(false)}
           severity={snackbarSeverity}
-          sx={{
-            width: "100%",
-            fontSize: "1rem",
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: "4px",
-          }}
+          sx={{ width: '100%' }}
         >
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </div>
+    </Box>
   );
 }
 
