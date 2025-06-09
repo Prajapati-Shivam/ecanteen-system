@@ -1,4 +1,5 @@
 const { Admin, User } = require("../../models");
+const { clerkClient } = require('@clerk/clerk-sdk-node');
 
 const check = async (req, res) => {
   const { UserEmail, Collegename, UserName, College_id } = req.body;
@@ -34,7 +35,7 @@ const check = async (req, res) => {
 };
 
 const addAdmin = async (req, res) => {
-  const { UserEmail, Collegename, UserName, College_id } = req.body;
+  const { userId, UserEmail, Collegename, UserName, College_id } = req.body;
   try {
     // Use insertOne on the underlying MongoDB collection
     const result = await Admin.insertOne({
@@ -44,9 +45,19 @@ const addAdmin = async (req, res) => {
     });
 
     if (result) {
-      res
-        .status(201)
-        .json({ success: true, message: "Admin registered successfully" });
+      try {
+        await clerkClient.users.updateUserMetadata(userId, {
+          publicMetadata: {
+            role: "admin",
+          },
+        });
+        res
+          .status(201)
+          .json({ success: true, message: "Admin registered successfully" });
+      } catch (err) {
+        console.error("Failed to update user role:", err);
+        res.status(500).json({ success: false, message: "Failed to update user role" });
+      }
     } else {
       res
         .status(500)
@@ -63,7 +74,7 @@ const addAdmin = async (req, res) => {
 };
 
 const addUser = async (req, res) => {
-  const { UserName, UserEmail, College_id } = req.body;
+  const { userId, UserName, UserEmail, College_id } = req.body;
   const checkCollege_id_exits = await Admin.findOne({
     college_id: College_id,
   });
@@ -83,11 +94,21 @@ const addUser = async (req, res) => {
 
       // Check if insertion was successful
       if (result) {
-        res.status(201).json({
-          success: true,
-          message: "User registered successfully",
-          insertedId: result.insertedId,
-        });
+        try {
+          await clerkClient.users.updateUserMetadata(userId, {
+            publicMetadata: {
+              role: "student",
+            },
+          });
+          res.status(201).json({
+            success: true,
+            message: "User registered successfully",
+            insertedId: result.insertedId,
+          });
+        } catch (err) {
+          console.error("Failed to update user role:", err);
+          return res.status(500).json({ success: false, message: "Failed to update user role" });
+        }
       } else {
         res.status(500).json({
           success: false,
@@ -105,8 +126,30 @@ const addUser = async (req, res) => {
   }
 };
 
+// const setRole = (req, res) => {
+//   const allowedRoles = ["admin", "student"];
+//   const { userId, role } = req.body;
+
+//   if (!allowedRoles.includes(role)) {
+//     return res.status(400).json({ success: false, message: "Invalid role" });
+//   }
+
+//   try {
+//     await clerkClient.users.updateUserMetadata(userId, {
+//       publicMetadata: {
+//         role,
+//       },
+//     });
+
+//     return res.status(200).json({ success: true });
+//   } catch (err) {
+//     console.error("Failed to update user role:", err);
+//     return res.status(500).json({ success: false });
+//   }
+// }
+
 module.exports = {
   check,
   addAdmin,
-  addUser,
+  addUser
 };
