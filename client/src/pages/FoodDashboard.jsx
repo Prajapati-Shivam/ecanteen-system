@@ -17,9 +17,6 @@ import SearchFoodItems from '../components/Food/SearchFoodItems';
 
 function FoodDashboard() {
   const [tab, setTab] = useState('create');
-  const [open, setOpen] = useState(false);
-  const [message, setMessage] = useState('');
-  const [severity, setSeverity] = useState('success');
 
   const [foodForm, setFoodForm] = useState({
     college_id: '',
@@ -32,6 +29,16 @@ function FoodDashboard() {
 
   const [foodItems, setFoodItems] = useState([]);
   const [search, setSearch] = useState('');
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success', // 'error', 'info', 'warning'
+  });
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const handleTabChange = (event, newValue) => setTab(newValue);
 
@@ -51,9 +58,7 @@ function FoodDashboard() {
           }
         );
 
-        setMessage('Food item added successfully!');
-        setSeverity('success');
-        setOpen(true);
+        showSnackbar('Food item added successfully!', 'success');
 
         setFoodItems([
           ...foodItems,
@@ -69,36 +74,37 @@ function FoodDashboard() {
         });
       } catch (err) {
         console.error('Error adding food item:', err);
-        setMessage('Failed to add food item. Please try again later.');
-        setSeverity('error');
-        setOpen(true);
+        showSnackbar(
+          'Failed to add food item. Please try again later.',
+          'error'
+        );
       }
     } else {
-      setMessage('Please fill all required fields!');
-      setSeverity('error');
-      setOpen(true);
+      showSnackbar('Please fill all required fields!', 'error');
     }
   };
 
   const fetchItems = async (college_id) => {
-    const items = await axios.get(
-      `${
-        import.meta.env.VITE_API_URL
-      }/api/admin/fetchItems?college_id=${college_id}`
-    );
-    if (items.data.items?.length > 0) {
-      const transformedItems = items.data.items.map(({ _id, ...rest }) => ({
+    try {
+      const res = await axios.get(
+        `${
+          import.meta.env.VITE_API_URL
+        }/api/admin/fetchItems?college_id=${college_id}`
+      );
+      const items = res.data.items || [];
+      const transformed = items.map(({ _id, ...rest }) => ({
         id: _id,
         ...rest,
       }));
-      setFoodItems(transformedItems);
-    } else {
-      setFoodItems([]);
+      setFoodItems(transformed);
+    } catch (err) {
+      console.error('Error fetching items:', err);
+      showSnackbar('Error fetching food items.', 'error');
     }
   };
 
   useEffect(() => {
-    fetchItems('3523');
+    fetchItems('4090'); // Default college_id for now
   }, []);
 
   return (
@@ -127,6 +133,7 @@ function FoodDashboard() {
           Food Panel
         </Typography>
 
+        {/* Tabs */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
           <Tabs
             value={tab}
@@ -134,6 +141,7 @@ function FoodDashboard() {
             centered
             indicatorColor='primary'
             textColor='inherit'
+            sx={{ '& .MuiTab-root': { color: 'white' } }}
           >
             <Tab label='Add Food Item' value='create' />
             <Tab label='View Food Items' value='view' />
@@ -149,7 +157,9 @@ function FoodDashboard() {
               handleAddFood={handleAddFood}
             />
           )}
+
           {tab === 'view' && <ViewFoodItems foodItems={foodItems} />}
+
           {tab === 'search' && (
             <SearchFoodItems
               search={search}
@@ -160,18 +170,25 @@ function FoodDashboard() {
         </Paper>
       </Container>
 
+      {/* Snackbar for messages */}
       <Snackbar
-        open={open}
+        open={snackbar.open}
         autoHideDuration={3000}
-        onClose={() => setOpen(false)}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
         <Alert
-          severity={severity}
-          onClose={() => setOpen(false)}
-          sx={{ fontSize: '1rem', width: '100%' }}
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          sx={{
+            fontSize: '1rem',
+            width: '100%',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '4px',
+          }}
         >
-          {message}
+          {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>

@@ -1,4 +1,3 @@
-import { SignIn, SignedIn, SignedOut, UserButton } from '@clerk/clerk-react';
 import { useUser } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -122,11 +121,13 @@ function UserForm() {
         <Typography variant='h5' gutterBottom textAlign='center'>
           Complete Your Registration
         </Typography>
+
         <img
           src={role == 'admin' ? adminImg : userImg}
           alt='User Form'
-          style={{ width: '100%', height: 'auto', marginBottom: '16px' }}
+          className='width-[70%] h-auto mb-4 mx-auto max-w-full max-h-[300px] object-contain'
         />
+
         <FormControl component='fieldset' fullWidth sx={{ mb: 2 }}>
           <FormLabel>Select Role</FormLabel>
           <RadioGroup
