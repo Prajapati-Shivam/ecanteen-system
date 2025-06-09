@@ -1,13 +1,4 @@
- import { useState } from 'react';
-import {
-  FreeBreakfast as FreeBreakfastIcon,
-  LunchDining as LunchDiningIcon,
-  DinnerDining as DinnerDiningIcon,
-  Restaurant as RestaurantIcon,
-  LunchDining as VegIcon,
-  KebabDining as NonVegIcon,
-  ShoppingCart as ShoppingCartIcon,
-} from '@mui/icons-material';
+import { useMemo, useState } from 'react';
 import {
   TextField,
   Button,
@@ -19,8 +10,9 @@ import {
   Alert,
   Chip,
   Box,
+  Input,
 } from '@mui/material';
-
+import FoodCard from '../components/Food/FoodCard';
 const dummyItems = [
   {
     id: 1,
@@ -54,8 +46,7 @@ const dummyItems = [
     name: 'Mutton Kebab',
     price: 190,
     category: 'Dinner',
-    image:
-      'https://images.unsplash.com/photo-1623245916537-8361a91e0c24?auto=format&fit=crop&w=600&q=80',
+    image: '',
     veg: false,
   },
 ];
@@ -70,22 +61,11 @@ export default function Browse() {
     severity: 'success',
   });
 
-  const filteredItems = dummyItems.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const getCategoryIcon = (category) => {
-    switch (category.toLowerCase()) {
-      case 'breakfast':
-        return <FreeBreakfastIcon fontSize="small" sx={{ color: '#facc15' }} />;
-      case 'lunch':
-        return <LunchDiningIcon fontSize="small" sx={{ color: '#22c55e' }} />;
-      case 'dinner':
-        return <DinnerDiningIcon fontSize="small" sx={{ color: '#ef4444' }} />;
-      default:
-        return <RestaurantIcon fontSize="small" sx={{ color: '#3b82f6' }} />;
-    }
-  };
+  const filteredItems = useMemo(() => {
+    return dummyItems.filter((item) =>
+      item.name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search]);
 
   const handleQuantityChange = (itemId, value) => {
     const qty = Math.max(1, Math.min(99, Number(value) || 1));
@@ -115,10 +95,10 @@ export default function Browse() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 min-h-screen">
+    <div className='max-w-7xl mx-auto px-4 py-8 min-h-screen'>
       <Typography
-        variant="h4"
-        align="center"
+        variant='h4'
+        align='center'
         sx={{
           fontWeight: '700',
           mb: 4,
@@ -132,15 +112,13 @@ export default function Browse() {
       </Typography>
 
       {/* Search Input */}
-      <Box maxWidth="400px" mx="auto" mb={6}>
-        <TextField
-          label="Search Food"
-        
-          fullWidth
-          size="small"
+      <Box maxWidth='400px' mx='auto' mb={6}>
+        <input
+          type='text'
+          placeholder='Search food items...'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          sx={{ borderRadius: 2, bgcolor: 'background.paper' }}
+          className='w-full p-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
         />
       </Box>
 
@@ -159,128 +137,21 @@ export default function Browse() {
       >
         {filteredItems.length === 0 ? (
           <Typography
-            variant="body1"
-            align="center"
+            variant='body1'
+            align='center'
             sx={{ color: 'text.secondary', gridColumn: '1 / -1' }}
           >
             No food items found.
           </Typography>
         ) : (
           filteredItems.map((item) => (
-            <Card
+            <FoodCard
               key={item.id}
-              sx={{
-                borderRadius: 3,
-                boxShadow: 3,
-                display: 'flex',
-                flexDirection: 'column',
-                height: '100%',
-                '&:hover': { boxShadow: 6 },
-              }}
-            >
-              <CardMedia
-                component="img"
-                image={item.image}
-                alt={item.name}
-                sx={{
-                  width: '100%',
-                  height: { xs: 180, sm: 200 },
-                  borderTopLeftRadius: 12,
-                  borderTopRightRadius: 12,
-                  objectFit: 'cover',
-                }}
-              />
-
-              <CardContent
-                sx={{
-                  flexGrow: 1,
-                  p: 2,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                }}
-              >
-                <Box>
-                  <Typography
-                    variant="h6"
-                    sx={{ fontWeight: 700, fontSize: { xs: '1.1rem', sm: '1.25rem' }, mb: 0.5 }}
-                  >
-                    {item.name}
-                  </Typography>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      color: 'text.secondary',
-                      fontWeight: '600',
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      mb: 1,
-                    }}
-                  >
-                    ₹{item.price}
-                  </Typography>
-
-                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    <Chip
-                      icon={getCategoryIcon(item.category)}
-                      label={item.category}
-                      size="small"
-                      variant="outlined"
-                      color="primary"
-                      sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' } }}
-                    />
-                    <Chip
-                      icon={item.veg ? <VegIcon fontSize="small" /> : <NonVegIcon fontSize="small" />}
-                      label={item.veg ? 'Veg' : 'Non-Veg'}
-                      size="small"
-                      variant="outlined"
-                      color={item.veg ? 'success' : 'error'}
-                      sx={{ fontSize: { xs: '0.7rem', sm: '0.85rem' } }}
-                    />
-                  </Box>
-                </Box>
-
-                {/* Quantity + Add Button Row */}
-                <Box
-                  sx={{
-                    mt: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    flexWrap: 'nowrap',
-                  }}
-                >
-                  <TextField
-                    label="Qty"
-                    type="number"
-                    size="small"
-                    inputProps={{
-                      min: 1,
-                      max: 99,
-                      style: { textAlign: 'center', fontSize: '0.9rem' },
-                    }}
-                    sx={{ width: 80 }}
-                    value={quantities[item.id] || 1}
-                    onChange={(e) => handleQuantityChange(item.id, e.target.value)}
-                  />
-
-                  <Button
-                    variant="contained"
-                    size="medium"
-                    onClick={() => handleAddToCart(item)}
-                    sx={{
-                      backgroundColor: 'success.main',
-                      flexGrow: 1,
-                      fontWeight: '700',
-                      fontSize: { xs: '0.9rem', sm: '1rem' },
-                      '&:hover': { backgroundColor: 'success.dark' },
-                    }}
-                    startIcon={<ShoppingCartIcon />}
-                  >
-                    Add to Cart
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
+              item={item}
+              quantity={quantities[item.id] || 1}
+              onQuantityChange={handleQuantityChange}
+              onAddToCart={handleAddToCart}
+            />
           ))
         )}
       </Box>
