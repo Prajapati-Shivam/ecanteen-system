@@ -7,5 +7,6 @@ const authController = require('./auth.controller');
 router.post("/check", authController.check);
 router.post("/addAdmin", authController.addAdmin);
 router.post("/addUser", authController.addUser);
+// router.post('/set-role', authController.setRole);
 
 module.exports = router;

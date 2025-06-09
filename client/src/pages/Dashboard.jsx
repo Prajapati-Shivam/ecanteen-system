@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-react';
 import {
   Box,
   Container,
@@ -10,6 +11,8 @@ import {
 } from '@mui/material';
 
 function Dashboard() {
+    const { user, isSignedIn } = useUser();
+  
   // check if the user is admin otherwise redirect to home page
 
   return (
@@ -44,7 +47,8 @@ function Dashboard() {
           align='center'
           sx={{ mb: 3 }}
         >
-          📊 Coming Soon: Analytics Dashboard!
+          📊 Coming Soon: Analytics Dashboard!<br />
+          Role : {user?.publicMetadata?.role}
         </Typography>
       </Container>
     </Box>

@@ -70,6 +70,7 @@ function UserForm() {
         const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/auth/addAdmin`,
           {
+            userId: user.id,
             Collegename: inputValue,
             UserName: user.fullName,
             UserEmail: user.primaryEmailAddress.emailAddress,
@@ -87,6 +88,7 @@ function UserForm() {
         const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/auth/addUser`,
           {
+            userId: user.id,
             UserName: user.fullName,
             UserEmail: user.primaryEmailAddress.emailAddress,
             College_id: inputValue,

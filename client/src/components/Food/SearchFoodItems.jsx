@@ -40,7 +40,7 @@ const SearchFoodItems = ({ search, setSearch, foodItems }) => {
                 <CardMedia
                   sx={{ height: 140 }}
                   image={`${item.image}`}
-                  title="green iguana"
+                  title={item.name}
                 />
                 <CardContent>
                   <Typography variant='h6'>{item.name}</Typography>
