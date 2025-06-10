@@ -1,39 +1,57 @@
 const { Item } = require("../../models");
-// college_id: { type: String, required: true },
-// name: { type: String, required: true },
-// image: { type: String },
-// price: { type: Number, required: true },
-// veg: { type: Boolean, default: true },
-// category: { type: String, enum: ['breakfast', 'lunch', 'dinner'], required: true },
-// availability: { type: Boolean, default: true }
+const cloudinary = require("../../utils/cloudinary");
+const streamifier = require("streamifier"); // <== required for buffer upload
 
 const addItem = async (req, res) => {
-  //Body - { college_id, name, price, category, image, type }
-  const { college_id, name, price, category, image, veg } = req.body;
+  const { college_id, name, price, category, veg } = req.body;
 
-  if (!name || !price || !category || !image || veg === undefined) {
-    return res.status(400).json({ message: "All fields are required" });
+  if (!name || !price || !category || veg === undefined || !req.file) {
+    return res
+      .status(400)
+      .json({ message: "All fields including image are required" });
   }
 
-  const newItem = new Item({
-    college_id: college_id,
-    name: name,
-    image: image,
-    price: price,
-    veg: veg,
-    category: category,
-    availability: true, // Default to true, can be updated later
-  });
-  await newItem.save().catch((err) => {
-    console.error("Error adding item:", err);
-    return res
-      .status(500)
-      .json({ message: "Error adding item", error: err.message });
-  });
-  // Logic to add an item
-  console.log(`Item added successfully - ${name} for college ${college_id}`);
+  try {
+    // Upload buffer to Cloudinary using upload_stream
+    const streamUpload = (buffer) => {
+      return new Promise((resolve, reject) => {
+        const stream = cloudinary.uploader.upload_stream(
+          { folder: "canteen_items" },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        );
+        streamifier.createReadStream(buffer).pipe(stream);
+      });
+    };
 
-  res.status(200).json({ item_id: newItem._id, message: "Item added successfully" });
+    const result = await streamUpload(req.file.buffer);
+    console.log("Cloudinary URL:", result.secure_url);
+
+    const newItem = new Item({
+      college_id,
+      name,
+      image: result.secure_url,
+      price,
+      veg,
+      category,
+      availability: true,
+    });
+
+    await newItem.save();
+
+    console.log(`Item added successfully - ${name} for college ${college_id}`);
+    res
+      .status(200)
+      .json({ item_id: newItem._id, message: "Item added successfully" });
+  } catch (err) {
+    console.error("Error uploading image or adding item:", err);
+    res.status(500).json({ message: "Failed to add item", error: err.message });
+  }
 };
 
 const fetchItems = async (req, res) => {
@@ -62,7 +80,15 @@ const fetchItems = async (req, res) => {
     filter.availability = filter_availability.toLowerCase() === "true";
   if (filter_price) {
     const [minPrice, maxPrice] = filter_price.split("-").map(Number);
-    if (!(isNaN(minPrice) || isNaN(maxPrice) || minPrice < 0 || maxPrice < 0 || minPrice > maxPrice))
+    if (
+      !(
+        isNaN(minPrice) ||
+        isNaN(maxPrice) ||
+        minPrice < 0 ||
+        maxPrice < 0 ||
+        minPrice > maxPrice
+      )
+    )
       filter.price = { $gte: minPrice, $lte: maxPrice };
   }
 
@@ -127,8 +153,7 @@ const deleteItem = async (req, res) => {
 };
 
 const updateItem = async (req, res) => {
-  const { item_id, name, price, category, image, veg, availability } =
-    req.body;
+  const { item_id, name, price, category, image, veg, availability } = req.body;
 
   if (!item_id) {
     return res.status(400).json({ message: "Item ID is required" });

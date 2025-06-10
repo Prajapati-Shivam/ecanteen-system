@@ -7,86 +7,93 @@ import {
   FormControlLabel,
   Radio,
   Button,
-} from '@mui/material';
+  Typography,
+} from "@mui/material";
 
 const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
   const handleFoodChange = (e) => {
     const { name, value } = e.target;
     setFoodForm({
       ...foodForm,
-      [name]: name === 'veg' ? value === 'true' : value,
+      [name]: name === "veg" ? value === "true" : value,
     });
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setFoodForm({ ...foodForm, image: file }); // ✅ Set File object
   };
 
   return (
     <Box>
       <TextField
-        label='College ID'
-        name='college_id'
+        label="College ID"
+        name="college_id"
         fullWidth
-        margin='normal'
+        margin="normal"
         value={foodForm.college_id}
         onChange={handleFoodChange}
       />
       <TextField
-        label='Food Name'
-        name='name'
+        label="Food Name"
+        name="name"
         fullWidth
-        margin='normal'
+        margin="normal"
         value={foodForm.name}
         onChange={handleFoodChange}
       />
+
+      {/* ✅ Use normal input for file */}
+      <Box sx={{ my: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>
+          Upload Image
+        </Typography>
+        <input type="file" accept="image/*" onChange={handleFileChange} />
+      </Box>
+
       <TextField
-        label='Image URL'
-        name='image'
+        label="Price"
+        name="price"
+        type="number"
         fullWidth
-        margin='normal'
-        value={foodForm.image}
-        onChange={handleFoodChange}
-      />
-      <TextField
-        label='Price'
-        name='price'
-        type='number'
-        fullWidth
-        margin='normal'
+        margin="normal"
         inputProps={{ min: 1 }}
         value={foodForm.price}
         onChange={handleFoodChange}
       />
       <TextField
         select
-        label='Select Category'
-        name='category'
+        label="Select Category"
+        name="category"
         fullWidth
-        margin='normal'
+        margin="normal"
         value={foodForm.category}
         onChange={handleFoodChange}
       >
-        <MenuItem value=''>
+        <MenuItem value="">
           <em>-- Select Category --</em>
         </MenuItem>
-        <MenuItem value='breakfast'>Breakfast</MenuItem>
-        <MenuItem value='lunch'>Lunch</MenuItem>
-        <MenuItem value='dinner'>Dinner</MenuItem>
+        <MenuItem value="breakfast">Breakfast</MenuItem>
+        <MenuItem value="lunch">Lunch</MenuItem>
+        <MenuItem value="dinner">Dinner</MenuItem>
       </TextField>
 
       <Box sx={{ mt: 2 }}>
-        <FormLabel component='legend'>Type</FormLabel>
+        <FormLabel component="legend">Type</FormLabel>
         <RadioGroup
           row
-          name='veg'
+          name="veg"
           value={String(foodForm.veg)}
           onChange={handleFoodChange}
         >
-          <FormControlLabel value='true' control={<Radio />} label='Veg' />
-          <FormControlLabel value='false' control={<Radio />} label='Non-Veg' />
+          <FormControlLabel value="true" control={<Radio />} label="Veg" />
+          <FormControlLabel value="false" control={<Radio />} label="Non-Veg" />
         </RadioGroup>
       </Box>
 
       <Button
-        variant='contained'
-        color='primary'
+        variant="contained"
+        color="primary"
         fullWidth
         sx={{ mt: 3 }}
         onClick={handleAddFood}
