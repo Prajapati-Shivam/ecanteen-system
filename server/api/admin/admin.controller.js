@@ -2,8 +2,15 @@ const { Item } = require("../../models");
 const cloudinary = require("../../utils/cloudinary");
 const streamifier = require("streamifier"); // <== required for buffer upload
 
+const { getAuth } = require('@clerk/express');
+const { users } = require("@clerk/clerk-sdk-node");
+
 const addItem = async (req, res) => {
-  const { college_id, name, price, category, veg } = req.body;
+  const { name, price, category, veg } = req.body;
+
+  const { userId } = getAuth(req);
+  const user = await users.getUser(userId);
+  const college_id = user?.publicMetadata?.college_id;
 
   if (!name || !price || !category || veg === undefined || !req.file) {
     return res
@@ -55,7 +62,15 @@ const addItem = async (req, res) => {
 };
 
 const fetchItems = async (req, res) => {
-  const { college_id } = req.query || 123; //Mandatory field (Default to fetch all items)
+  let { college_id } = req.query;
+  
+  if (college_id===undefined) {
+    const { userId } = getAuth(req);
+    const user = await users.getUser(userId);
+    college_id = user?.publicMetadata?.college_id;
+    console.log('fetched - '+college_id);
+  }
+  console.log(college_id);
   const {
     filter_name,
     filter_category,
