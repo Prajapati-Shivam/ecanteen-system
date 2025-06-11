@@ -8,14 +8,28 @@ import {
   Radio,
   Button,
   Typography,
-} from "@mui/material";
+} from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import { styled } from '@mui/material/styles';
+
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
 
 const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
   const handleFoodChange = (e) => {
     const { name, value } = e.target;
     setFoodForm({
       ...foodForm,
-      [name]: name === "veg" ? value === "true" : value,
+      [name]: name === 'veg' ? value === 'true' : value,
     });
   };
 
@@ -27,73 +41,103 @@ const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
   return (
     <Box>
       <TextField
-        label="College ID"
-        name="college_id"
+        label='Food Name'
+        name='name'
         fullWidth
-        margin="normal"
-        value={foodForm.college_id}
-        onChange={handleFoodChange}
-      />
-      <TextField
-        label="Food Name"
-        name="name"
-        fullWidth
-        margin="normal"
+        margin='normal'
         value={foodForm.name}
         onChange={handleFoodChange}
       />
 
-      {/* ✅ Use normal input for file */}
-      <Box sx={{ my: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>
-          Upload Image
-        </Typography>
-        <input type="file" accept="image/*" onChange={handleFileChange} />
-      </Box>
-
       <TextField
-        label="Price"
-        name="price"
-        type="number"
+        label='Price'
+        name='price'
+        type='number'
         fullWidth
-        margin="normal"
+        margin='normal'
         inputProps={{ min: 1 }}
         value={foodForm.price}
         onChange={handleFoodChange}
       />
       <TextField
         select
-        label="Select Category"
-        name="category"
+        label='Select Category'
+        name='category'
         fullWidth
-        margin="normal"
+        margin='normal'
         value={foodForm.category}
         onChange={handleFoodChange}
       >
-        <MenuItem value="">
+        <MenuItem value=''>
           <em>-- Select Category --</em>
         </MenuItem>
-        <MenuItem value="breakfast">Breakfast</MenuItem>
-        <MenuItem value="lunch">Lunch</MenuItem>
-        <MenuItem value="dinner">Dinner</MenuItem>
+        <MenuItem value='breakfast'>Breakfast</MenuItem>
+        <MenuItem value='lunch'>Lunch</MenuItem>
+        <MenuItem value='dinner'>Dinner</MenuItem>
       </TextField>
 
-      <Box sx={{ mt: 2 }}>
-        <FormLabel component="legend">Type</FormLabel>
-        <RadioGroup
-          row
-          name="veg"
-          value={String(foodForm.veg)}
-          onChange={handleFoodChange}
-        >
-          <FormControlLabel value="true" control={<Radio />} label="Veg" />
-          <FormControlLabel value="false" control={<Radio />} label="Non-Veg" />
-        </RadioGroup>
+      <Box
+        sx={{ mt: 2 }}
+        className='flex gap-4 flex-col md:flex-row items-center'
+      >
+        <div>
+          <FormLabel component='legend' defaultValue={'veg'}>
+            Type
+          </FormLabel>
+          <RadioGroup
+            row
+            name='veg'
+            value={String(foodForm.veg)}
+            onChange={handleFoodChange}
+          >
+            <FormControlLabel value='true' control={<Radio />} label='Veg' />
+            <FormControlLabel
+              value='false'
+              control={<Radio />}
+              label='Non-Veg'
+            />
+          </RadioGroup>
+        </div>
+        <div>
+          <Button
+            component='label'
+            role={undefined}
+            variant='contained'
+            tabIndex={-1}
+            startIcon={<CloudUploadIcon />}
+          >
+            Upload image
+            <VisuallyHiddenInput
+              type='file'
+              onChange={handleFileChange}
+              accept='image/*'
+            />
+          </Button>
+        </div>
       </Box>
 
+      {foodForm.image && (
+        <Box sx={{ mt: 2 }}>
+          <Typography variant='subtitle2'>Preview:</Typography>
+          <img
+            src={URL.createObjectURL(foodForm.image)}
+            alt='Preview'
+            style={{ width: '100px', borderRadius: 8, marginTop: 8 }}
+          />
+        </Box>
+      )}
+
+      {/* Uncomment this code if above code doesnt work for file upload */}
+      {/* <Box sx={{ my: 2 }}>
+        <Typography variant='subtitle1' sx={{ mb: 1 }}>
+          Upload Image
+        </Typography>
+        <input type='file' accept='image/*' onChange={handleFileChange} />
+      </Box> */}
+
       <Button
-        variant="contained"
-        color="primary"
+        variant='contained'
+        color='primary'
         fullWidth
         sx={{ mt: 3 }}
         onClick={handleAddFood}

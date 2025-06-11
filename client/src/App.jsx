@@ -10,6 +10,8 @@ import FoodDashboard from './pages/FoodDashboard';
 import Browse from './pages/Browse';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
+import ProtectedRoute from './util/ProtectedRoute';
+import RoleCheck from './util/RoleCheck';
 
 function App() {
   return (
@@ -18,16 +20,28 @@ function App() {
         <Route path='/' element={<MainLayout />}>
           <Route path='/' element={<Home />} />
           <Route path='/about' element={<About />} />
-          <Route path='/user-form' element={<UserForm />} />
-          <Route path='/browse' element={<Browse />} />
-          <Route path='/cart' element={<Cart />} />
-          <Route path='/orders' element={<Orders />} />
-          {/* Admin routes */}
-          <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/food' element={<FoodDashboard />} />
+          <Route path='/contact' element={<About />} />
 
-          {/* Student routes */}
-          <Route path='/student' element={<Student />} />
+          {/* Protected Routes - Require Login */}
+          <Route element={<ProtectedRoute />}>
+            
+            {/* Admin routes */}
+            <Route element={<RoleCheck role='admin' />}>
+              <Route path='/dashboard' element={<Dashboard />} />
+              <Route path='/food' element={<FoodDashboard />} />
+            </Route>
+            
+            {/* User routes */}
+            <Route element={<RoleCheck role='student' />}>
+              <Route path='/user-form' element={<UserForm />} />
+              <Route path='/browse' element={<Browse />} />
+              <Route path='/cart' element={<Cart />} />
+              <Route path='/orders' element={<Orders />} />
+              <Route path='/student' element={<Student />} />
+            </Route>
+
+          </Route>
+          
         </Route>
       </Routes>
     </Router>
