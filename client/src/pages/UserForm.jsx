@@ -41,13 +41,15 @@ function UserForm() {
               College_id: randomId,
             }
           );
-
-          if (data.exists) {
-            setSnackbar("Email Already Exists", "error");
-            navigate("/dashboard");
-          } else if (data.success === false) {
+          if (data.success === false) {
             setSnackbar("Server Down! Try after some time", "error");
             navigate("/");
+          } else if (data.exists_admin) {
+            setSnackbar("Email Already Exists", "error");
+            navigate("/dashboard");
+          } else if (data.exists_user) {
+            setSnackbar("Email Already Exists", "error");
+            navigate("/student");
           }
         } catch (error) {
           console.error("Check error:", error);
