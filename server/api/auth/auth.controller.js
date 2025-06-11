@@ -1,4 +1,4 @@
-const { Admin, User } = require("../../models");
+const { Admin, User, Order } = require("../../models");
 const { clerkClient } = require("@clerk/clerk-sdk-node");
 
 const check = async (req, res) => {
@@ -137,6 +137,47 @@ const addUser = async (req, res) => {
   }
 };
 
+const addOrder = async (req, res) => {
+  const { items, totalAmount, gmailAccount } = req.body;
+  try {
+    const user_id = await User.findOne(
+      {
+        email: gmailAccount,
+      },
+      { _id: 1 }
+    );
+    const college_id = await User.findOne(
+      {
+        email: gmailAccount,
+      },
+      {
+        college_id: 1,
+      }
+    );
+
+    if (user_id && college_id) {
+      const addOrder_res = await Order.insertOne({
+        user_id: user_id,
+        college_id: college_id.college_id,
+        items: items,
+        totalAmount: totalAmount,
+      });
+      if (addOrder_res) {
+        res.status(200).json({
+          status: true,
+          message: "Order has been placed",
+        });
+      } else {
+        res.status(500).json({
+          status: false,
+          message: "Order has not been placed",
+        });
+      }
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 // const setRole = (req, res) => {
 //   const allowedRoles = ["admin", "student"];
 //   const { userId, role } = req.body;
@@ -163,4 +204,5 @@ module.exports = {
   check,
   addAdmin,
   addUser,
+  addOrder,
 };
