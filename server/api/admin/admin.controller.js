@@ -63,14 +63,13 @@ const addItem = async (req, res) => {
 
 const fetchItems = async (req, res) => {
   let { college_id } = req.query;
-  
+
   if (college_id===undefined) {
     const { userId } = getAuth(req);
     const user = await users.getUser(userId);
     college_id = user?.publicMetadata?.college_id;
-    console.log('fetched - '+college_id);
   }
-  console.log(college_id);
+  
   const {
     filter_name,
     filter_category,
@@ -80,7 +79,7 @@ const fetchItems = async (req, res) => {
     filter_sort,
   } = req.query;
   const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10; // default to 10 items per page
+  const limit = parseInt(req.query.limit) || 1000; // default to 10 items per page
 
   if (!college_id) {
     return res.status(400).json({ message: "CollegeID is required" });

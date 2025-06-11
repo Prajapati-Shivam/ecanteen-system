@@ -41,6 +41,8 @@ function FoodDashboard() {
 
   const handleTabChange = (event, newValue) => setTab(newValue);
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleAddFood = async () => {
     const { name, price, category, veg, image } = foodForm;
 
@@ -52,7 +54,8 @@ function FoodDashboard() {
         formData.append('category', category);
         formData.append('veg', veg);
         formData.append('image', image); // ✅ actual File object
-
+        
+        setIsSubmitting(true);
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/admin/addItem`,
           formData,{
@@ -84,6 +87,7 @@ function FoodDashboard() {
     } else {
       showSnackbar('Please fill all required fields!', 'error');
     }
+    setIsSubmitting(false);
   };
 
   const fetchItems = async (college_id) => {
@@ -136,6 +140,7 @@ function FoodDashboard() {
               foodForm={foodForm}
               setFoodForm={setFoodForm}
               handleAddFood={handleAddFood}
+              isSubmitting={isSubmitting}
             />
           )}
 

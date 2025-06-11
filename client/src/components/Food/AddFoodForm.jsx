@@ -8,6 +8,7 @@ import {
   Radio,
   Button,
   Typography,
+  CircularProgress
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { styled } from '@mui/material/styles';
@@ -24,7 +25,7 @@ const VisuallyHiddenInput = styled('input')({
   width: 1,
 });
 
-const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
+const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood, isSubmitting }) => {
   const handleFoodChange = (e) => {
     const { name, value } = e.target;
     setFoodForm({
@@ -39,7 +40,7 @@ const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
   };
 
   return (
-    <Box>
+    <Box sx={{ position: 'relative', opacity: isSubmitting ? 0.4 : 1, pointerEvents: isSubmitting ? 'none' : 'auto' }}>
       <TextField
         label='Food Name'
         name='name'
@@ -144,6 +145,22 @@ const AddFoodForm = ({ foodForm, setFoodForm, handleAddFood }) => {
       >
         Add Food Item
       </Button>
+      {isSubmitting && (
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          width="100%"
+          height="100%"
+          bgcolor="rgba(255,255,255,0.6)"
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          zIndex={1}
+        >
+          <CircularProgress />
+        </Box>
+      )}
     </Box>
   );
 };
