@@ -1,5 +1,5 @@
 const { Admin, User } = require("../../models");
-const { clerkClient } = require('@clerk/clerk-sdk-node');
+const { clerkClient } = require("@clerk/clerk-sdk-node");
 
 const check = async (req, res) => {
   const { UserEmail, Collegename, UserName, College_id } = req.body;
@@ -12,11 +12,16 @@ const check = async (req, res) => {
     const existingUser = await User.findOne({
       $or: [{ email: UserEmail }, { college_id: College_id }],
     });
-    if (existingAdmin || existingUser) {
+    if (existingAdmin) {
       //This means email exits
       return res.json({
-        exists: true,
-        message: "Account already exists\n either as Student or Admin",
+        exists_admin: true,
+        message: "Account already exists as a Admin",
+      });
+    } else if (existingUser) {
+      return res.json({
+        exists_user: true,
+        message: "Account already exists as a Student/User",
       });
     } else {
       //This means email doesn't exist
@@ -57,7 +62,9 @@ const addAdmin = async (req, res) => {
           .json({ success: true, message: "Admin registered successfully" });
       } catch (err) {
         console.error("Failed to update user role:", err);
-        res.status(500).json({ success: false, message: "Failed to update user role" });
+        res
+          .status(500)
+          .json({ success: false, message: "Failed to update user role" });
       }
     } else {
       res
@@ -109,7 +116,9 @@ const addUser = async (req, res) => {
           });
         } catch (err) {
           console.error("Failed to update user role:", err);
-          return res.status(500).json({ success: false, message: "Failed to update user role" });
+          return res
+            .status(500)
+            .json({ success: false, message: "Failed to update user role" });
         }
       } else {
         res.status(500).json({
@@ -153,5 +162,5 @@ const addUser = async (req, res) => {
 module.exports = {
   check,
   addAdmin,
-  addUser
+  addUser,
 };
