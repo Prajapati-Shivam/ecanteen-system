@@ -2,12 +2,12 @@ import React from 'react'
 import { Outlet, Navigate } from 'react-router-dom'
 import { useUser } from "@clerk/clerk-react";
 
-function AdminRoute() {
+function RoleCheck({ role }) {
     const { user } = useUser();
     
     return (
         <>
-            {user && user?.publicMetadata?.role == 'admin' ? (
+            {user && user?.publicMetadata?.role == role ? (
                 <Outlet />
             ) : (
                 <Navigate to="/" replace />
@@ -16,4 +16,4 @@ function AdminRoute() {
     )
 }
 
-export default AdminRoute
+export default RoleCheck

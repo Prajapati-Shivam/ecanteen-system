@@ -11,7 +11,7 @@ import Browse from './pages/Browse';
 import Cart from './pages/Cart';
 import Orders from './pages/Orders';
 import ProtectedRoute from './util/ProtectedRoute';
-import AdminRoute from  './util/AdminRoute';
+import RoleCheck from './util/RoleCheck';
 
 function App() {
   return (
@@ -24,20 +24,24 @@ function App() {
 
           {/* Protected Routes - Require Login */}
           <Route element={<ProtectedRoute />}>
+            
             {/* Admin routes */}
-            <Route element={<AdminRoute />}>
+            <Route element={<RoleCheck role='admin' />}>
               <Route path='/dashboard' element={<Dashboard />} />
               <Route path='/food' element={<FoodDashboard />} />
             </Route>
+            
+            {/* User routes */}
+            <Route element={<RoleCheck role='student' />}>
+              <Route path='/user-form' element={<UserForm />} />
+              <Route path='/browse' element={<Browse />} />
+              <Route path='/cart' element={<Cart />} />
+              <Route path='/orders' element={<Orders />} />
+              <Route path='/student' element={<Student />} />
+            </Route>
 
-            <Route path='/user-form' element={<UserForm />} />
-            <Route path='/browse' element={<Browse />} />
-            <Route path='/cart' element={<Cart />} />
-            <Route path='/orders' element={<Orders />} />
-
-            {/* Student routes */}
-            <Route path='/student' element={<Student />} />
           </Route>
+          
         </Route>
       </Routes>
     </Router>
