@@ -1,27 +1,60 @@
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, TextField, Box } from '@mui/material';
 import FoodCardEdit from './FoodCardEdit';
 
-const ViewFoodItems = ({ foodItems }) => {
+const ViewFoodItems = ({ foodItems, setFoodItems, search, setSearch }) => {
+  const filteredItems = foodItems.filter((item) =>
+    item.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const handleUpdate = (updatedItem) => {
+    setFoodItems((prevItems) =>
+      prevItems.map((item) =>
+        (item._id || item.id) === (updatedItem._id || updatedItem.id)
+          ? updatedItem
+          : item
+      )
+    );
+  };
+
+  const handleDelete = (deletedId) => {
+    setFoodItems((prevItems) =>
+      prevItems.filter((item) => (item._id || item.id) !== deletedId)
+    );
+  };
+
   return (
-    <Grid container spacing={2} sx={{ mt: 1 }}>
+    <Box sx={{ px: 2, mt: 2 }}>
+      <TextField
+        label='Search by Food Name'
+        fullWidth
+        variant='outlined'
+        margin='normal'
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
       {foodItems.length === 0 ? (
-        <Grid item xs={12}>
-          <Typography variant='body1' sx={{ p: 2 }}>
-            No food items available.
-          </Typography>
-        </Grid>
+        <Typography variant='body1' sx={{ mt: 4, textAlign: 'center' }}>
+          No food items available.
+        </Typography>
+      ) : filteredItems.length === 0 ? (
+        <Typography variant='body1' sx={{ mt: 4, textAlign: 'center' }}>
+          No matching food found.
+        </Typography>
       ) : (
-        foodItems.map((item) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={item.id}>
-            <FoodCardEdit
-              food={item}
-              onUpdate={(updatedItem) => console.log('Update:', updatedItem)}
-              onDelete={(id) => console.log('Delete item with ID:', id)}
-            />
-          </Grid>
-        ))
+        <Grid container spacing={3} sx={{ mt: 1 }}>
+          {filteredItems.map((item) => (
+            <Grid size={{ sm: 6, md: 4 }} key={item._id}>
+              <FoodCardEdit
+                food={item}
+                onUpdate={handleUpdate}
+                onDelete={handleDelete}
+              />
+            </Grid>
+          ))}
+        </Grid>
       )}
-    </Grid>
+    </Box>
   );
 };
 

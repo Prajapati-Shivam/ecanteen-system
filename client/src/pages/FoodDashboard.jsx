@@ -13,7 +13,6 @@ import {
 
 import AddFoodForm from '../components/Food/AddFoodForm';
 import ViewFoodItems from '../components/Food/ViewFoodItems';
-import SearchFoodItems from '../components/Food/SearchFoodItems';
 
 function FoodDashboard() {
   const [tab, setTab] = useState('create');
@@ -54,11 +53,12 @@ function FoodDashboard() {
         formData.append('category', category);
         formData.append('veg', veg);
         formData.append('image', image); // ✅ actual File object
-        
+
         setIsSubmitting(true);
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/admin/addItem`,
-          formData,{
+          formData,
+          {
             withCredentials: true, // Ensures cookies are sent
           }
           // ❌ Do not set headers — let Axios set the correct Content-Type
@@ -90,13 +90,12 @@ function FoodDashboard() {
     setIsSubmitting(false);
   };
 
-  const fetchItems = async (college_id) => {
+  const fetchItems = async () => {
     try {
       const res = await axios.get(
-        `${
-          import.meta.env.VITE_API_URL
-        }/api/admin/fetchItems`,{
-          withCredentials: true
+        `${import.meta.env.VITE_API_URL}/api/admin/fetchItems`,
+        {
+          withCredentials: true,
         }
       );
       const items = res.data.items || [];
@@ -113,11 +112,15 @@ function FoodDashboard() {
 
   useEffect(() => {
     fetchItems(); // Default college_id for now
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <Box maxWidth='lg' className='min-h-screen px-2 pb-4 flex flex-col mx-auto'>
-      <div className='flex items-center justify-between p-4'>
+    <Box
+      maxWidth='lg'
+      className='min-h-screen md:px-2 pb-4 flex flex-col mx-auto'
+    >
+      <div className='flex flex-col sm:flex-row items-center justify-between p-4'>
         <h3 className='text-2xl font-bold text-white'>Food Panel</h3>
         <Tabs
           value={tab}
@@ -132,9 +135,7 @@ function FoodDashboard() {
         </Tabs>
       </div>
       <Container maxWidth='lg'>
-        {/* Tabs */}
-
-        <Paper elevation={6} sx={{ p: 3, borderRadius: 3 }}>
+        <Paper elevation={6} sx={{ borderRadius: 3 }} className='p-2 sm:p-4'>
           {tab === 'create' && (
             <AddFoodForm
               foodForm={foodForm}
@@ -144,13 +145,12 @@ function FoodDashboard() {
             />
           )}
 
-          {tab === 'view' && <ViewFoodItems foodItems={foodItems} />}
-
-          {tab === 'search' && (
-            <SearchFoodItems
+          {tab === 'view' && (
+            <ViewFoodItems
+              foodItems={foodItems}
+              setFoodItems={setFoodItems}
               search={search}
               setSearch={setSearch}
-              foodItems={foodItems}
             />
           )}
         </Paper>
