@@ -178,6 +178,41 @@ const addOrder = async (req, res) => {
     console.log(error);
   }
 };
+
+const displayOrder = async (req, res) => {
+  try {
+    const { gmailAccount } = req.body;
+    const user_id = await User.findOne(
+      {
+        email: "siddharthsurve29@gmail.com",
+      },
+      {
+        user_id: 1,
+      }
+    );
+    const orders = await Order.find(
+      {
+        user_id: user_id,
+      },
+      {
+        items: 1,
+      }
+    );
+    if (orders.length > 0) {
+      console.log(orders);
+      res.status(200).json({
+        orders: orders,
+      });
+    } else {
+      res.json({
+        orders: orders,
+        message: "Sorry no orders for " + gmailAccount,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
 // const setRole = (req, res) => {
 //   const allowedRoles = ["admin", "student"];
 //   const { userId, role } = req.body;
@@ -205,4 +240,5 @@ module.exports = {
   addAdmin,
   addUser,
   addOrder,
+  displayOrder,
 };

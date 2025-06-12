@@ -44,10 +44,10 @@ function UserForm() {
           if (data.success === false) {
             setSnackbar("Server Down! Try after some time", "error");
             navigate("/");
-          } else if (data.exists_admin) {
+          } else if (data.exists_admin == true) {
             setSnackbar("Email Already Exists", "error");
             navigate("/dashboard");
-          } else if (data.exists_user) {
+          } else if (data.exists_user == true) {
             setSnackbar("Email Already Exists", "error");
             navigate("/student");
           }
