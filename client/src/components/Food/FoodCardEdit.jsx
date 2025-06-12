@@ -4,7 +4,6 @@ import {
   CardMedia,
   TextField,
   MenuItem,
-  Typography,
   Button,
   Box,
   RadioGroup,
@@ -14,6 +13,7 @@ import {
 import axios from 'axios';
 import { useState } from 'react';
 import placeholderImg from '../../assets/placeholder-food.jpg';
+
 const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
   const url = import.meta.env.VITE_API_URL;
   const [editableFood, setEditableFood] = useState({ ...food });
@@ -22,7 +22,12 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
     const { name, value } = e.target;
     setEditableFood((prev) => ({
       ...prev,
-      [name]: name === 'veg' ? value === 'true' : value,
+      [name]:
+        name === 'veg'
+          ? value === 'true'
+          : name === 'price'
+          ? parseFloat(value)
+          : value,
     }));
   };
 
@@ -30,32 +35,35 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
     try {
       const updatedFood = {
         ...editableFood,
-        item_id: food.id,
+        item_id: food._id || food.id,
+        availability: editableFood.availability ?? true,
       };
+
       const { data } = await axios.put(
         `${url}/api/admin/updateItem`,
         updatedFood
       );
+      console.log('Update response:', data.item);
+      if (onUpdate && data.item) onUpdate(data.item);
 
-      if (onUpdate) onUpdate(data.item);
-      alert('Food item updated successfully!'); // replace by snackbar
+      alert('Food item updated successfully!'); // ✅ Replace with snackbar
     } catch (error) {
       console.error('Error updating food item:', error);
-      alert('Failed to update food item. Please try again.'); // replace by snackbar
+      alert('Failed to update food item. Please try again.'); // ✅ Replace with snackbar
     }
   };
 
   const handleDelete = async () => {
     try {
       const { data } = await axios.delete(`${url}/api/admin/deleteItem`, {
-        item_id: food.id,
+        params: { item_id: food._id || food.id }, // ✅ FIX: must go in params
       });
       if (data.message === 'Item deleted successfully') {
-        if (onDelete) onDelete(food.id);
+        if (onDelete) onDelete(food._id || food.id);
       }
     } catch (error) {
       console.error('Error deleting food item:', error);
-      alert('Failed to delete food item. Please try again.'); // replace by snackbar
+      alert('Failed to delete food item. Please try again.'); // ✅ Replace with snackbar
     }
   };
 
@@ -65,6 +73,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
         borderRadius: 2,
         boxShadow: 3,
         height: '100%',
+        width: '100%',
         display: 'flex',
         flexDirection: 'column',
       }}
@@ -74,8 +83,8 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
           component='img'
           image={editableFood.image || placeholderImg}
           onError={(e) => {
-            e.target.onerror = null; // prevents looping
-            e.target.src = placeholderImg; // fallback image
+            e.target.onerror = null;
+            e.target.src = placeholderImg;
           }}
           alt={editableFood.name}
           sx={{
@@ -93,6 +102,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
         <TextField
           label='Name'
           name='name'
+          size='small'
           value={editableFood.name}
           onChange={handleChange}
           fullWidth
@@ -101,6 +111,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
         <TextField
           label='Price'
           name='price'
+          size='small'
           type='number'
           value={editableFood.price}
           onChange={handleChange}
@@ -112,6 +123,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
           select
           label='Category'
           name='category'
+          size='small'
           value={editableFood.category}
           onChange={handleChange}
           fullWidth
