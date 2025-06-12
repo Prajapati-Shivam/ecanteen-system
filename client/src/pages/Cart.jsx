@@ -1,4 +1,4 @@
- import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FreeBreakfast as FreeBreakfastIcon,
   LunchDining as LunchDiningIcon,
@@ -35,7 +35,6 @@ export default function Cart() {
   useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('cart')) || [];
     setCartItems(cart);
-    // Initialize quantities state
     const initialQuantities = {};
     cart.forEach((item) => {
       initialQuantities[item.id] = item.quantity;
@@ -62,8 +61,6 @@ export default function Cart() {
     else if (qty > 99) qty = 99;
 
     setQuantities((prev) => ({ ...prev, [itemId]: qty }));
-
-    // Update cartItems quantity as well
     setCartItems((prev) =>
       prev.map((item) =>
         item.id === itemId ? { ...item, quantity: qty } : item
@@ -100,7 +97,6 @@ export default function Cart() {
       });
       return;
     }
-    // For demo, just clear cart and show message
     localStorage.removeItem('cart');
     setCartItems([]);
     setSnackbar({
@@ -133,7 +129,7 @@ export default function Cart() {
       </Typography>
 
       {cartItems.length === 0 ? (
-        <Typography variant="body1" align="center" className="text-white">
+        <Typography variant="body1" align="center" color="white">
           Your cart is empty.
         </Typography>
       ) : (
@@ -149,6 +145,7 @@ export default function Cart() {
               key={item.id}
               sx={{
                 display: 'flex',
+                flexDirection: { xs: 'column', sm: 'row' },
                 borderRadius: 3,
                 boxShadow: 3,
                 '&:hover': { boxShadow: 6 },
@@ -159,9 +156,10 @@ export default function Cart() {
                 image={item.image}
                 alt={item.name}
                 sx={{
-                  width: 120,
+                  width: { xs: '100%', sm: 120 },
+                  height: { xs: 160, sm: 'auto' },
                   objectFit: 'cover',
-                  borderRadius: '12px 0 0 12px',
+                  borderRadius: { xs: '12px 12px 0 0', sm: '12px 0 0 12px' },
                 }}
               />
 
@@ -169,13 +167,22 @@ export default function Cart() {
                 <Box>
                   <Typography
                     variant="h6"
-                    sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.2rem' }, mb: 0.5 }}
+                    sx={{
+                      fontWeight: 700,
+                      fontSize: { xs: '1rem', sm: '1.2rem' },
+                      mb: 0.5,
+                      wordBreak: 'break-word',
+                    }}
                   >
                     {item.name}
                   </Typography>
                   <Typography
                     variant="subtitle1"
-                    sx={{ color: 'text.secondary', fontWeight: '600', mb: 1 }}
+                    sx={{
+                      color: 'text.secondary',
+                      fontWeight: '600',
+                      mb: 1,
+                    }}
                   >
                     ₹{item.price} each
                   </Typography>
@@ -207,26 +214,33 @@ export default function Cart() {
                     gap: 1,
                     flexWrap: 'nowrap',
                     mt: 'auto',
+                    pt: 1,
                   }}
                 >
                   <TextField
                     label="Qty"
                     type="number"
                     size="small"
-                    inputProps={{ min: 1, max: 99, style: { textAlign: 'center', fontSize: '0.9rem' } }}
+                    inputProps={{
+                      min: 1,
+                      max: 99,
+                      style: {
+                        textAlign: 'center',
+                        fontSize: '0.9rem',
+                      },
+                    }}
                     sx={{ width: 80 }}
                     value={quantities[item.id] || 1}
                     onChange={(e) => handleQuantityChange(item.id, e.target.value)}
                   />
 
                   <Button
-            
                     color="error"
                     startIcon={<DeleteIcon />}
                     onClick={() => handleRemoveItem(item.id)}
-                    sx={{ ml: 'auto' }}
+                    sx={{ ml: 'auto', fontSize: { xs: '0.75rem', sm: '0.9rem' } }}
                   >
-                
+                    Remove
                   </Button>
                 </Box>
               </CardContent>
@@ -235,7 +249,6 @@ export default function Cart() {
         </Box>
       )}
 
-      {/* Total and Actions */}
       {cartItems.length > 0 && (
         <Box
           sx={{
@@ -247,15 +260,14 @@ export default function Cart() {
             gap: 2,
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 700 }}>
+          <Typography variant="h6" sx={{ fontWeight: 700, color: 'whitesmoke' }}>
             Total: ₹{totalPrice}
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Button variant="contained" color="primary" onClick={handleUpdateCart}>
               Update Cart
             </Button>
-
             <Button
               variant="contained"
               color="success"

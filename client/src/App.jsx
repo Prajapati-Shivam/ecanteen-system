@@ -33,9 +33,9 @@ function App() {
 
             {/* User routes */}
             <Route element={<RoleCheck role="student" />}>
-              <Route path="/browse" element={<Browse />} />
+              {/* <Route path="/browse" element={<Browse />} />
               <Route path="/cart" element={<Cart />} />
-              <Route path="/orders" element={<Orders />} />
+              <Route path="/orders" element={<Orders />} /> */}
               <Route path="/student" element={<Student />} />
             </Route>
           </Route>
