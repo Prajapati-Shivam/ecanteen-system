@@ -123,13 +123,13 @@ export default function Orders() {
             icon={<ActiveIcon />}
             iconPosition="start"
             label="Active Orders"
-            sx={{ fontWeight: '600' }}
+            sx={{ fontWeight: '600',color:'whitesmoke' }}
           />
           <Tab
             icon={<CompletedIcon />}
             iconPosition="start"
             label="Completed Orders"
-            sx={{ fontWeight: '600' }}
+            sx={{ fontWeight: '600' ,color:'whitesmoke' }}
           />
         </Tabs>
       </Box>

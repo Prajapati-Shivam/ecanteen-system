@@ -19,8 +19,10 @@ const Navbar = () => {
   };
 
   const publicLinks = [
-    { name: 'Contact', path: '/contact' },
+     {name: 'Home', path: '/' },
+    // { name: 'Contact', path: '/contact' },
     { name: 'About', path: '/about' },
+   
   ];
 
   const isAdmin = isSignedIn && user?.publicMetadata?.role === 'admin';
@@ -29,9 +31,10 @@ const Navbar = () => {
       { name: 'Food Panel', path: '/food' },
       { name: 'Dashboard', path: '/dashboard' },
     ] :  [
-      { name: 'Browse', path: '/browse' },
-      { name: 'Orders', path: '/orders' },
-      { name: 'Cart', path: '/cart' }
+      {name : 'Student', path: '/student'},
+      // { name: 'Browse', path: '/browse' },
+      // { name: 'Orders', path: '/orders' },
+      // { name: 'Cart', path: '/cart' }
     ];
 
   return (
@@ -144,6 +147,8 @@ const Navbar = () => {
                       <SignInButton
                         mode='modal'
                         fallbackRedirectUrl='/user-form'
+                    
+                        signUpForceRedirectUrl='/user-form'
                       >
                         <Button variant='contained' color='primary'>
                           Login
