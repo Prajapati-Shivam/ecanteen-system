@@ -39,7 +39,7 @@ const Student = () => {
       <div className="flex flex-col sm:flex-row items-center justify-between p-4">
         <div>
           <Typography variant="h4" className="text-white font-bold mb-2">
-           Welcome, {user?.fullName || "Guest"}
+           Welcome, {user?.fullName || "Guest"} 
           </Typography>
           <Typography variant="body1" className="text-white">
             Role: {user?.publicMetadata?.role || "N/A"} | College ID:{" "}
@@ -49,6 +49,7 @@ const Student = () => {
 
         <Tabs
           value={tab}
+          className="p-2 m-2"
           onChange={handleTabChange}
           centered
           indicatorColor="primary"
