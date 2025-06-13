@@ -9,14 +9,26 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Snackbar,
+  Alert,
 } from '@mui/material';
 import axios from 'axios';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import placeholderImg from '../../assets/placeholder-food.jpg';
 
 const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
   const url = import.meta.env.VITE_API_URL;
   const [editableFood, setEditableFood] = useState({ ...food });
+
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success', // 'error', 'info', 'warning'
+  });
+
+  const showSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,6 +42,10 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
           : value,
     }));
   };
+
+  const isModified = useMemo(() => {
+    return JSON.stringify(editableFood) !== JSON.stringify(food);
+  }, [editableFood, food]);
 
   const handleSave = async () => {
     try {
@@ -46,14 +62,18 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
       console.log('Update response:', data.item);
       if (onUpdate && data.item) onUpdate(data.item);
 
-      alert('Food item updated successfully!'); // ✅ Replace with snackbar
+      showSnackbar('Food item updated successfully!', 'success');
+      setEditableFood(updatedFood);
     } catch (error) {
       console.error('Error updating food item:', error);
-      alert('Failed to update food item. Please try again.'); // ✅ Replace with snackbar
+      showSnackbar('Failed to update food item. Please try again.', 'error');
     }
   };
 
   const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this food item?')) {
+      return;
+    }
     try {
       const { data } = await axios.delete(`${url}/api/admin/deleteItem`, {
         params: { item_id: food._id || food.id }, // ✅ FIX: must go in params
@@ -63,7 +83,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
       }
     } catch (error) {
       console.error('Error deleting food item:', error);
-      alert('Failed to delete food item. Please try again.'); // ✅ Replace with snackbar
+      showSnackbar('Failed to delete food item. Please try again.', 'error');
     }
   };
 
@@ -151,6 +171,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
             variant='contained'
             color='primary'
             fullWidth
+            disabled={!isModified}
           >
             Save
           </Button>
@@ -164,6 +185,26 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
           </Button>
         </Box>
       </CardContent>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          sx={{
+            fontSize: '1rem',
+            width: '100%',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '4px',
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Card>
   );
 };
