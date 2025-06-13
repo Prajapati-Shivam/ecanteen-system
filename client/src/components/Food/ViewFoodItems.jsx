@@ -44,7 +44,7 @@ const ViewFoodItems = ({ foodItems, setFoodItems, search, setSearch }) => {
       ) : (
         <Grid container spacing={3} sx={{ mt: 1 }}>
           {filteredItems.map((item) => (
-            <Grid size={{ sm: 6, md: 4 }} key={item._id}>
+            <Grid size={{ sm: 6, md: 4 }} key={item._id || item.id}>
               <FoodCardEdit
                 food={item}
                 onUpdate={handleUpdate}
