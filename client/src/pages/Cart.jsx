@@ -112,7 +112,7 @@ export default function Cart() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 min-h-screen">
+    <div className="max-w-5xl mx-auto  min-h-screen">
       <Typography
         variant="h4"
         align="center"
