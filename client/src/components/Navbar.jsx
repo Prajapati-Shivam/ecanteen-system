@@ -19,23 +19,24 @@ const Navbar = () => {
   };
 
   const publicLinks = [
-     {name: 'Home', path: '/' },
+    { name: 'Home', path: '/' },
     // { name: 'Contact', path: '/contact' },
     { name: 'About', path: '/about' },
-   
   ];
 
   const isAdmin = isSignedIn && user?.publicMetadata?.role === 'admin';
-  
-    const authLinks = isAdmin ? [
-      { name: 'Food Panel', path: '/food' },
-      { name: 'Dashboard', path: '/dashboard' },
-    ] :  [
-      {name : 'Student', path: '/student'},
-      // { name: 'Browse', path: '/browse' },
-      // { name: 'Orders', path: '/orders' },
-      // { name: 'Cart', path: '/cart' }
-    ];
+
+  const authLinks = isAdmin
+    ? [
+        { name: 'Food Panel', path: '/food' },
+        { name: 'Orders Panel', path: '/orders' },
+        { name: 'Dashboard', path: '/dashboard' },
+      ]
+    : [
+        { name: 'Student', path: '/student' },
+        // { name: 'Browse', path: '/browse' },
+        // { name: 'Cart', path: '/cart' }
+      ];
 
   return (
     <div className='fixed top-0 left-0 w-full z-50'>
@@ -92,8 +93,9 @@ const Navbar = () => {
 
             {/* Nav Links */}
             <div
-              className={`w-full md:block md:w-auto transition-all duration-300 ease-in-out ${isOpen ? 'block' : 'hidden'
-                }`}
+              className={`w-full md:block md:w-auto transition-all duration-300 ease-in-out ${
+                isOpen ? 'block' : 'hidden'
+              }`}
               id='navbar-default'
             >
               <ul className='font-medium flex flex-col md:flex-row md:space-x-5 mt-4 md:mt-0 text-black'>
@@ -103,10 +105,11 @@ const Navbar = () => {
                     <Link
                       to={link.path}
                       onClick={() => setIsOpen(false)}
-                      className={`block py-2 px-4 rounded transition-all duration-300 ${location.pathname === link.path
+                      className={`block py-2 px-4 rounded transition-all duration-300 ${
+                        location.pathname === link.path
                           ? 'bg-black text-white'
                           : 'hover:bg-black hover:text-white'
-                        }`}
+                      }`}
                     >
                       {link.name}
                     </Link>
@@ -120,10 +123,11 @@ const Navbar = () => {
                       <Link
                         to={link.path}
                         onClick={() => setIsOpen(false)}
-                        className={`block py-2 px-4 rounded transition-all duration-300 ${location.pathname === link.path
+                        className={`block py-2 px-4 rounded transition-all duration-300 ${
+                          location.pathname === link.path
                             ? 'bg-black text-white'
                             : 'hover:bg-black hover:text-white'
-                          }`}
+                        }`}
                       >
                         {link.name}
                       </Link>
@@ -147,7 +151,6 @@ const Navbar = () => {
                       <SignInButton
                         mode='modal'
                         fallbackRedirectUrl='/user-form'
-                    
                         signUpForceRedirectUrl='/user-form'
                       >
                         <Button variant='contained' color='primary'>
