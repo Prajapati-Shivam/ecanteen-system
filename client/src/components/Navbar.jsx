@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CONSTANTS } from '../../lib/constant';
 import {
@@ -26,6 +26,11 @@ const Navbar = () => {
 
   const isAdmin = isSignedIn && user?.publicMetadata?.role === 'admin';
 
+  useEffect(() => {
+    if (isSignedIn && user?.publicMetadata?.role) {
+      localStorage.setItem('role', isAdmin ? 'admin' : 'student');
+    }
+  }, [isSignedIn, user]);
   const authLinks = isAdmin
     ? [
         { name: 'Food Panel', path: '/food' },

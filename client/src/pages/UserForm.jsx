@@ -30,7 +30,6 @@ function UserForm() {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [isNewUser, setIsNewUser] = useState(null); // null = loading, true = new user
-  const randomId = Math.floor(Math.random() * 10000);
 
   const setSnackbar = (message, severity) => {
     setSnackbarMessage(message);
@@ -47,7 +46,6 @@ function UserForm() {
             {
               UserName: user.fullName,
               UserEmail: user.primaryEmailAddress.emailAddress,
-              College_id: randomId,
             }
           );
 
@@ -59,7 +57,7 @@ function UserForm() {
           } else if (data.exists_user === true) {
             navigate('/student');
           } else {
-            setIsNewUser(true); // User is new
+            setIsNewUser(true); // New user, show form
           }
         } catch (error) {
           console.error('Check error:', error);
@@ -68,10 +66,12 @@ function UserForm() {
         }
       })();
     }
-  }, [user, isSignedIn]);
+  }, [user, isSignedIn, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const randomId = Math.floor(Math.random() * 10000); // Generate only on submit
 
     try {
       if (role === 'admin') {
@@ -87,6 +87,7 @@ function UserForm() {
         );
 
         if (data.success) {
+          localStorage.setItem('role', 'admin');
           setSnackbar('🎉 Admin Registered Successfully!', 'success');
           navigate('/dashboard');
         } else {
@@ -106,6 +107,7 @@ function UserForm() {
         if (data.college_id_exists === false) {
           setSnackbar('College ID does not exist', 'error');
         } else if (data.success === true) {
+          localStorage.setItem('role', 'student');
           setSnackbar('✅ Student Registered Successfully!', 'success');
           navigate('/student');
         } else {
@@ -155,7 +157,7 @@ function UserForm() {
           <FormLabel>Select Role</FormLabel>
           <RadioGroup
             row
-            defaultValue={'student'}
+            defaultValue='student'
             onChange={(e) => {
               setRole(e.target.value);
               setInputValue('');
