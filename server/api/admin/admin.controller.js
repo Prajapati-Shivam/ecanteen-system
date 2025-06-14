@@ -202,35 +202,56 @@ const updateItem = async (req, res) => {
   }
 };
 
-// [
-//     {
-//     id: 'order5',
-//     name: 'Chicken Curry',
-//     price: 200,
-//     quantity: 2,
-//     status: 'active',
-//     date: '2025-06-11',
-//   },
-//   ...
-// ]
-const fetchOrders = async (req, res) => {
+const fetchOrders = async (req, res, filterType) => {
   const { userId } = getAuth(req);
   if (!userId)
     return res.status(400).json({ messgae: 'Login First' });
 
   const user = await users.getUser(userId);
-  if(user?.publicMetadata?.role === 'student')
-    return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin'});
-  
+  if (user?.publicMetadata?.role === 'student')
+    return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin' });
+
   const college_id = user?.publicMetadata?.college_id;
   // const college_id = 5583;
 
+  const filter = filterType === 'all' ? {
+    college_id
+  } : {
+    college_id,
+    orderStatus: filterType
+  }
+
   try {
-    const orders = await Order.find({ college_id });
+    const orders = await Order.find(filter);
+    // const mapped = orders.map((order) => ({id: order._id, ...order}))
     return res.status(200).json({ status: 'success', orders });
   } catch (err) {
     console.log(err)
     return res.status(500).json({ status: 'error' })
+  }
+}
+
+const fetchAllOrders = (req, res) => fetchOrders(req, res, 'all')
+const fetchActiveOrders = (req, res) => fetchOrders(req, res, 'active')
+const fetchCompletedOrders = (req, res) => fetchOrders(req, res, 'completed')
+
+const updateOrderStatus = async (req, res) => {
+  const { id, orderStatus } = req.body;
+  if (!id || !orderStatus)
+    return res.status(400).json({ status: 'failed', message: 'Incomplete Order Details' });
+  console.log(id);
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(id, { orderStatus }, { new: true });
+
+    if (updatedOrder.matchedCount === 0) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+    console.log(updatedOrder);
+    return res.status(200).json({ status: 'success', message: 'Order updated successfully', order: updatedOrder });
+
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({ status: 'error', message: 'Error Occured at server, try again later!' });
   }
 
 }
@@ -240,5 +261,8 @@ module.exports = {
   fetchItems,
   deleteItem,
   updateItem,
-  fetchOrders
+  fetchAllOrders,
+  fetchActiveOrders,
+  fetchCompletedOrders,
+  updateOrderStatus
 };
