@@ -211,8 +211,8 @@ const fetchOrders = async (req, res, filterType) => {
   if (user?.publicMetadata?.role === 'student')
     return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin' });
 
-  // const college_id = user?.publicMetadata?.college_id;
-  const college_id = 5583;
+  const college_id = user?.publicMetadata?.college_id;
+  // const college_id = 5583;
 
   const filter = filterType === 'all' ? {
     college_id
