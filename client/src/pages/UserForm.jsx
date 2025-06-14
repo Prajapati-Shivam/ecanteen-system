@@ -24,7 +24,7 @@ function UserForm() {
   const { user, isSignedIn } = useUser();
   const navigate = useNavigate();
 
-  const [role, setRole] = useState('student');
+  const [role, setRole] = useState();
   const [inputValue, setInputValue] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -87,7 +87,7 @@ function UserForm() {
         );
 
         if (data.success) {
-          localStorage.setItem('role', 'admin');
+          await user.reload();
           setSnackbar('🎉 Admin Registered Successfully!', 'success');
           navigate('/dashboard');
         } else {
@@ -107,7 +107,7 @@ function UserForm() {
         if (data.college_id_exists === false) {
           setSnackbar('College ID does not exist', 'error');
         } else if (data.success === true) {
-          localStorage.setItem('role', 'student');
+          await user.reload();
           setSnackbar('✅ Student Registered Successfully!', 'success');
           navigate('/student');
         } else {
@@ -172,21 +172,19 @@ function UserForm() {
           </RadioGroup>
         </FormControl>
 
-        {role && (
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label={role === 'admin' ? 'College Name' : 'College ID'}
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              required
-              fullWidth
-              sx={{ mb: 2 }}
-            />
-            <Button type='submit' variant='contained' color='primary' fullWidth>
-              Submit
-            </Button>
-          </form>
-        )}
+        <form onSubmit={handleSubmit}>
+          <TextField
+            label={role === 'admin' ? 'College Name' : 'College ID'}
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            required
+            fullWidth
+            sx={{ mb: 2 }}
+          />
+          <Button type='submit' variant='contained' color='primary' fullWidth>
+            Submit
+          </Button>
+        </form>
       </Paper>
 
       <Snackbar

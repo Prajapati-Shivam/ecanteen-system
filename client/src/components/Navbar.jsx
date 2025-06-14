@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CONSTANTS } from '../../lib/constant';
 import {
@@ -11,37 +11,43 @@ import { Button } from '@mui/material';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation();
   const { user, isSignedIn } = useUser();
+  const location = useLocation();
+  const toggleMenu = () => setIsOpen(!isOpen);
 
-  const toggleMenu = () => {
-    setIsOpen(!isOpen);
-  };
+  useEffect(() => {
+    // Close the menu when the route changes
+    setIsOpen(false);
+  }, [location.pathname]);
 
   const publicLinks = [
     { name: 'Home', path: '/' },
-    // { name: 'Contact', path: '/contact' },
     { name: 'About', path: '/about' },
   ];
 
-  const isAdmin = isSignedIn && user?.publicMetadata?.role === 'admin';
+  const studentLinks = [
+    { name: 'Student', path: '/student' },
+    // { name: 'My Orders', path: '/orders' },
+  ];
 
-  useEffect(() => {
-    if (isSignedIn && user?.publicMetadata?.role) {
-      localStorage.setItem('role', isAdmin ? 'admin' : 'student');
+  const adminLinks = [
+    { name: 'Food Panel', path: '/food' },
+    { name: 'Manage Orders', path: '/orders' },
+    { name: 'Dashboard', path: '/dashboard' },
+  ];
+
+  const isAdmin = isSignedIn && user?.publicMetadata?.role === 'admin';
+  const isStudent = isSignedIn && user?.publicMetadata?.role === 'student';
+  let activeLinks = publicLinks;
+  if (isSignedIn) {
+    if (isAdmin) {
+      activeLinks = [...publicLinks, ...adminLinks];
+    } else if (isStudent) {
+      activeLinks = [...publicLinks, ...studentLinks];
+    } else {
+      activeLinks = [...publicLinks];
     }
-  }, [isSignedIn, user]);
-  const authLinks = isAdmin
-    ? [
-        { name: 'Food Panel', path: '/food' },
-        { name: 'Orders Panel', path: '/orders' },
-        { name: 'Dashboard', path: '/dashboard' },
-      ]
-    : [
-        { name: 'Student', path: '/student' },
-        // { name: 'Browse', path: '/browse' },
-        // { name: 'Cart', path: '/cart' }
-      ];
+  }
 
   return (
     <div className='fixed top-0 left-0 w-full z-50'>
@@ -56,7 +62,7 @@ const Navbar = () => {
               {CONSTANTS.APP_NAME}
             </Link>
 
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Toggle */}
             <button
               onClick={toggleMenu}
               type='button'
@@ -71,7 +77,6 @@ const Navbar = () => {
                   fill='none'
                   viewBox='0 0 24 24'
                   stroke='currentColor'
-                  strokeWidth={2}
                 >
                   <path
                     strokeLinecap='round'
@@ -85,7 +90,6 @@ const Navbar = () => {
                   fill='none'
                   viewBox='0 0 24 24'
                   stroke='currentColor'
-                  strokeWidth={2}
                 >
                   <path
                     strokeLinecap='round'
@@ -104,8 +108,7 @@ const Navbar = () => {
               id='navbar-default'
             >
               <ul className='font-medium flex flex-col md:flex-row md:space-x-5 mt-4 md:mt-0 text-black'>
-                {/* Public Links */}
-                {publicLinks.map((link) => (
+                {activeLinks.map((link) => (
                   <li key={link.name}>
                     <Link
                       to={link.path}
@@ -121,36 +124,19 @@ const Navbar = () => {
                   </li>
                 ))}
 
-                {/* Authenticated Links */}
-                {isSignedIn &&
-                  authLinks.map((link) => (
-                    <li key={link.name}>
-                      <Link
-                        to={link.path}
-                        onClick={() => setIsOpen(false)}
-                        className={`block py-2 px-4 rounded transition-all duration-300 ${
-                          location.pathname === link.path
-                            ? 'bg-black text-white'
-                            : 'hover:bg-black hover:text-white'
-                        }`}
-                      >
-                        {link.name}
-                      </Link>
-                    </li>
-                  ))}
-
-                {/* Auth Buttons */}
                 <li>
                   {isSignedIn ? (
-                    <UserButton
-                      userProfileMode='navigation'
-                      appearance={{
-                        elements: {
-                          userButtonAvatarBox: 'w-10 h-10',
-                          userButtonAvatarImage: 'w-10 h-10 rounded-full',
-                        },
-                      }}
-                    />
+                    <div className='flex items-center space-x-5'>
+                      <UserButton
+                        userProfileMode='navigation'
+                        appearance={{
+                          elements: {
+                            userButtonAvatarBox: 'w-10 h-10',
+                            userButtonAvatarImage: 'w-10 h-10 rounded-full',
+                          },
+                        }}
+                      />
+                    </div>
                   ) : (
                     <SignedOut>
                       <SignInButton
