@@ -126,6 +126,8 @@ const addUser = async (req, res) => {
   }
 };
 
+
+//after clicking checkout
 const addOrder = async (req, res) => {
   const { items, totalAmount, gmailAccount } = req.body;
   try {
@@ -167,6 +169,7 @@ const addOrder = async (req, res) => {
     console.log(error);
   }
 };
+ 
 
 const displayOrder = async (req, res) => {
   try {
