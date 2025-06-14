@@ -1,4 +1,4 @@
-const { Item } = require('../../models');
+const { Item, Order } = require('../../models');
 const cloudinary = require('../../utils/cloudinary');
 const streamifier = require('streamifier'); // <== required for buffer upload
 
@@ -202,9 +202,43 @@ const updateItem = async (req, res) => {
   }
 };
 
+// [
+//     {
+//     id: 'order5',
+//     name: 'Chicken Curry',
+//     price: 200,
+//     quantity: 2,
+//     status: 'active',
+//     date: '2025-06-11',
+//   },
+//   ...
+// ]
+const fetchOrders = async (req, res) => {
+  const { userId } = getAuth(req);
+  if (!userId)
+    return res.status(400).json({ messgae: 'Login First' });
+
+  const user = await users.getUser(userId);
+  if(user?.publicMetadata?.role === 'student')
+    return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin'});
+  
+  const college_id = user?.publicMetadata?.college_id;
+  // const college_id = 5583;
+
+  try {
+    const orders = await Order.find({ college_id });
+    return res.status(200).json({ status: 'success', orders });
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ status: 'error' })
+  }
+
+}
+
 module.exports = {
   addItem,
   fetchItems,
   deleteItem,
   updateItem,
+  fetchOrders
 };
