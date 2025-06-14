@@ -13,7 +13,7 @@ connectDB(); // Connect to MongoDB
 // Middleware to parse incoming JSON and enable CORS
 app.use(express.json());
 app.use(cors({
-  origin: "http://localhost:5174",
+  origin: process.env.CLIENT_URL || "http://localhost:5173",
   credentials: true,
 }));
 app.use("/api", apiRoutes); // Use API routes
