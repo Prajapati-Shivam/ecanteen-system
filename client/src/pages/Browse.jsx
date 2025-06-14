@@ -1,5 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Typography, Snackbar, Alert, Box } from '@mui/material';
+import {
+  Typography,
+  Snackbar,
+  Alert,
+  Box,
+  Pagination,
+} from '@mui/material';
 import axios from 'axios';
 import { useUser } from '@clerk/clerk-react';
 import FoodCard from '../components/Food/FoodCard';
@@ -14,6 +20,8 @@ export default function Browse() {
     message: '',
     severity: 'success',
   });
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -52,6 +60,12 @@ export default function Browse() {
     );
   }, [search, items]);
 
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+  const currentItems = filteredItems.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const handleQuantityChange = (itemId, value) => {
     const qty = Math.max(1, Math.min(99, Number(value) || 1));
     setQuantities((prev) => ({ ...prev, [itemId]: qty }));
@@ -78,7 +92,7 @@ export default function Browse() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto min-h-screen">
+    <div className="max-w-7xl mx-auto min-h-screen text-white">
       <Typography
         variant="h4"
         align="center"
@@ -116,7 +130,7 @@ export default function Browse() {
           px: { xs: 1, sm: 0 },
         }}
       >
-        {filteredItems.length === 0 ? (
+        {currentItems.length === 0 ? (
           <Typography
             variant="body1"
             align="center"
@@ -125,7 +139,7 @@ export default function Browse() {
             No food items found.
           </Typography>
         ) : (
-          filteredItems.map((item, index) => (
+          currentItems.map((item, index) => (
             <FoodCard
               key={item._id || `${item.name}-${index}`}
               item={item}
@@ -136,6 +150,27 @@ export default function Browse() {
           ))
         )}
       </Box>
+
+      {totalPages > 1 && (
+        <Box display="flex" justifyContent="center" mt={4}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(e, page) => setCurrentPage(page)}
+            shape="rounded"
+            sx={{
+              '& .MuiPaginationItem-root': {
+                color: 'white',
+                borderColor: 'white',
+              },
+              '& .Mui-selected': {
+                backgroundColor: 'white',
+                color: 'black',
+              },
+            }}
+          />
+        </Box>
+      )}
 
       <Snackbar
         open={snackbar.open}

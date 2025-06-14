@@ -139,7 +139,7 @@ export default function FoodCard({
             }}
             sx={{ width: 80 }}
             value={quantity}
-            onChange={(e) => onQuantityChange(item.id, e.target.value)}
+            onChange={(e) => onQuantityChange(item._id, e.target.value)}
           />
 
           <Button
