@@ -126,7 +126,6 @@ const addUser = async (req, res) => {
   }
 };
 
-
 //after clicking checkout
 const addOrder = async (req, res) => {
   const { items, totalAmount, gmailAccount } = req.body;
@@ -169,7 +168,6 @@ const addOrder = async (req, res) => {
     console.log(error);
   }
 };
- 
 
 const displayOrder = async (req, res) => {
   try {
@@ -182,15 +180,10 @@ const displayOrder = async (req, res) => {
         user_id: 1,
       }
     );
-    const orders = await Order.find(
-      {
-        user_id: user_id,
-      },
-      {
-        items: 1,
-      }
-    );
-    if (orders.length > 0) {
+    const orders = await Order.find({
+      user_id: user_id,
+    });
+    if (user_id && orders.length > 0) {
       console.log(orders);
       res.status(200).json({
         orders: orders,
