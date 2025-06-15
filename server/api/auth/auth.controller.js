@@ -1,6 +1,9 @@
 const { Admin, User, Order, Item } = require("../../models");
 const { clerkClient } = require("@clerk/clerk-sdk-node");
 
+const { getAuth } = require('@clerk/express');
+const { users } = require('@clerk/clerk-sdk-node');
+
 const check = async (req, res) => {
   const { UserEmail, Collegename, UserName, College_id } = req.body;
 
@@ -184,7 +187,7 @@ const displayOrder = async (req, res) => {
       user_id: user_id,
     });
     if (user_id && orders.length > 0) {
-      console.log(orders);
+      // console.log(orders);
       res.status(200).json({
         orders: orders,
       });
@@ -229,27 +232,30 @@ const browseOrder = async (req, res) => {
     console.log(error);
   }
 };
-// const setRole = (req, res) => {
-//   const allowedRoles = ["admin", "student"];
-//   const { userId, role } = req.body;
 
-//   if (!allowedRoles.includes(role)) {
-//     return res.status(400).json({ success: false, message: "Invalid role" });
-//   }
+const deleteAccount = async (req, res) => {
+  const { userId } = getAuth(req);
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-//   try {
-//     await clerkClient.users.updateUserMetadata(userId, {
-//       publicMetadata: {
-//         role,
-//       },
-//     });
+  const user = await users.getUser(userId);
 
-//     return res.status(200).json({ success: true });
-//   } catch (err) {
-//     console.error("Failed to update user role:", err);
-//     return res.status(500).json({ success: false });
-//   }
-// }
+  const primaryEmail = user.emailAddresses.find(
+    (email) => email.id === user.primaryEmailAddressId
+  );
+  const user_email = primaryEmail?.emailAddress; //Get Registered User_Email from clerk
+  
+  try {
+    await clerkClient.users.deleteUser(userId); //Delete the user data from clerk
+    await User.deleteOne({ email: user_email}); //Delete the user data from DB
+    
+    return res.status(200).json({ status: 'deleted', message: "Account deleted successfully" });
+  }catch(err){
+    console.error("Error deleting user:", err);
+    return res.status(500).json({ status: 'error', message: "Internal Server Error" });
+  }
+
+
+}
 
 module.exports = {
   check,
@@ -258,4 +264,5 @@ module.exports = {
   addOrder,
   displayOrder,
   browseOrder,
+  deleteAccount
 };
