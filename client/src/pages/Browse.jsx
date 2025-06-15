@@ -151,26 +151,37 @@ export default function Browse() {
         )}
       </Box>
 
-      {totalPages > 1 && (
-        <Box display="flex" justifyContent="center" mt={4}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={(e, page) => setCurrentPage(page)}
-            shape="rounded"
-            sx={{
-              '& .MuiPaginationItem-root': {
-                color: 'white',
-                borderColor: 'white',
-              },
-              '& .Mui-selected': {
-                backgroundColor: 'white',
-                color: 'black',
-              },
-            }}
-          />
-        </Box>
-      )}
+        {totalPages > 1 && (
+  <Box display="flex" justifyContent="center" mt={4}>
+    <Pagination
+      count={totalPages}
+      page={currentPage}
+      onChange={(e, page) => setCurrentPage(page)}
+      shape="rounded"
+      sx={{
+        '& .MuiPaginationItem-root': {
+          color: 'white',
+          border: '1px solid white',
+          backgroundColor: 'transparent',
+          transition: 'all 0.2s ease-in-out',
+        },
+        '& .MuiPaginationItem-root:hover': {
+          backgroundColor: 'white',
+          color: 'black',
+        },
+        '& .MuiPaginationItem-root.Mui-selected': {
+          backgroundColor: 'white',
+          color: 'black',
+          border: '1px solid white',
+        },
+        '& .MuiPaginationItem-ellipsis': {
+          color: 'white',
+        },
+      }}
+    />
+  </Box>
+)}
+
 
       <Snackbar
         open={snackbar.open}
