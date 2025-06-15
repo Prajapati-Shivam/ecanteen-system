@@ -296,17 +296,20 @@ export default function Orders() {
 
         // Transform orders if needed
         const transformedOrders = fetchedOrders.flatMap(order =>
-          order.items.map(item => ({
-            id: item._id || order._id,
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-            status: item.status || 'active',
-            category: item.category || 'lunch',
-            veg: item.veg !== undefined ? item.veg : true,
-            date: order.date || new Date().toISOString().split('T')[0],
-          }))
-        );
+  order.items.map(item => ({
+    id: item._id || order._id,
+    name: item.name,
+    price: item.price,
+    quantity: item.quantity,
+    status: order.orderStatus || 'active', // ✅ Fix is here
+    category: item.category || 'lunch',
+    veg: item.veg !== undefined ? item.veg : true,
+    date: order.orderTime
+      ? new Date(order.orderTime).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0],
+  }))
+);
+
 
         setOrders(transformedOrders);
         setSnackbar({
@@ -395,7 +398,7 @@ export default function Orders() {
           <CircularProgress />
         </Box>
       ) : filteredOrders.length === 0 ? (
-        <Typography align="center" color="text.secondary">
+        <Typography align="center"  className="text-gray-50">
           No {tab === 0 ? 'active' : 'completed'} orders found.
         </Typography>
       ) : (
