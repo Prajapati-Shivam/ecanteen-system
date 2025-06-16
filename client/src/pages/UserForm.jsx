@@ -36,18 +36,17 @@ function UserForm() {
     setSnackbarSeverity(severity);
     setOpenSnackbar(true);
   };
-
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   useEffect(() => {
     if (user && isSignedIn) {
       (async () => {
         try {
-          const { data } = await axios.post(
-            `${import.meta.env.VITE_API_URL}/api/auth/check`,
-            {
-              UserName: user.fullName,
-              UserEmail: user.primaryEmailAddress.emailAddress,
-            }
-          );
+          const { data } = await axios.post(`${url}/api/auth/check`, {
+            UserName: user.fullName,
+            UserEmail: user.primaryEmailAddress.emailAddress,
+          });
 
           if (data.success === false) {
             setSnackbar('Server Down! Try after some time', 'error');
@@ -66,7 +65,7 @@ function UserForm() {
         }
       })();
     }
-  }, [user, isSignedIn, navigate]);
+  }, [user, isSignedIn, navigate, url]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,16 +74,13 @@ function UserForm() {
 
     try {
       if (role === 'admin') {
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/auth/addAdmin`,
-          {
-            userId: user.id,
-            Collegename: inputValue,
-            UserName: user.fullName,
-            UserEmail: user.primaryEmailAddress.emailAddress,
-            College_id: randomId,
-          }
-        );
+        const { data } = await axios.post(`${url}/api/auth/addAdmin`, {
+          userId: user.id,
+          Collegename: inputValue,
+          UserName: user.fullName,
+          UserEmail: user.primaryEmailAddress.emailAddress,
+          College_id: randomId,
+        });
 
         if (data.success) {
           await user.reload();
@@ -94,15 +90,12 @@ function UserForm() {
           setSnackbar('⚠️ ' + data.message, 'error');
         }
       } else {
-        const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/auth/addUser`,
-          {
-            userId: user.id,
-            UserName: user.fullName,
-            UserEmail: user.primaryEmailAddress.emailAddress,
-            College_id: inputValue,
-          }
-        );
+        const { data } = await axios.post(`${url}/api/auth/addUser`, {
+          userId: user.id,
+          UserName: user.fullName,
+          UserEmail: user.primaryEmailAddress.emailAddress,
+          College_id: inputValue,
+        });
 
         if (data.college_id_exists === false) {
           setSnackbar('College ID does not exist', 'error');

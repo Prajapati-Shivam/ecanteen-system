@@ -29,7 +29,11 @@ export default function Cart() {
 
   const [cartItems, setCartItems] = useState([]);
   const [quantities, setQuantities] = useState({});
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
 
   useEffect(() => {
     const stored = JSON.parse(localStorage.getItem('cart')) || [];
@@ -46,19 +50,21 @@ export default function Cart() {
   const categoryIcon = (cat = '') => {
     switch (cat.toLowerCase()) {
       case 'breakfast':
-        return <BreakfastIcon fontSize="small" sx={{ color: '#facc15' }} />;
+        return <BreakfastIcon fontSize='small' sx={{ color: '#facc15' }} />;
       case 'lunch':
-        return <LunchIcon fontSize="small" sx={{ color: '#22c55e' }} />;
+        return <LunchIcon fontSize='small' sx={{ color: '#22c55e' }} />;
       case 'dinner':
-        return <DinnerIcon fontSize="small" sx={{ color: '#ef4444' }} />;
+        return <DinnerIcon fontSize='small' sx={{ color: '#ef4444' }} />;
       default:
-        return <DefaultIcon fontSize="small" sx={{ color: '#3b82f6' }} />;
+        return <DefaultIcon fontSize='small' sx={{ color: '#3b82f6' }} />;
     }
   };
 
   const handleQty = (_id, val) => {
     const qty = Math.max(1, Math.min(99, Number(val) || 1));
-    const updated = cartItems.map((it) => (it._id === _id ? { ...it, quantity: qty } : it));
+    const updated = cartItems.map((it) =>
+      it._id === _id ? { ...it, quantity: qty } : it
+    );
     setCartItems(updated);
     setQuantities((p) => ({ ...p, [_id]: qty }));
     localStorage.setItem('cart', JSON.stringify(updated));
@@ -93,8 +99,12 @@ export default function Cart() {
       gmailAccount,
     };
 
+    const url = import.meta.env.PROD
+      ? import.meta.env.VITE_API_URL
+      : 'http://localhost:3001';
+
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/addOrder`, {
+      const res = await fetch(`${url}/api/auth/addOrder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -119,10 +129,10 @@ export default function Cart() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto min-h-screen">
+    <div className='max-w-5xl mx-auto min-h-screen'>
       <Typography
-        variant="h4"
-        align="center"
+        variant='h4'
+        align='center'
         sx={{
           fontWeight: 700,
           mb: 4,
@@ -136,7 +146,7 @@ export default function Cart() {
       </Typography>
 
       {!cartItems.length ? (
-        <Typography variant="body1" align="center" color="white">
+        <Typography variant='body1' align='center' color='white'>
           Your cart is empty.
         </Typography>
       ) : (
@@ -159,7 +169,7 @@ export default function Cart() {
                 }}
               >
                 <CardMedia
-                  component="img"
+                  component='img'
                   image={item.image}
                   alt={item.name}
                   sx={{
@@ -170,36 +180,55 @@ export default function Cart() {
                   }}
                 />
 
-                <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                <CardContent
+                  sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+                >
+                  <Typography variant='h6' sx={{ fontWeight: 700 }}>
                     {item.name}
                   </Typography>
-                  <Typography variant="subtitle2" color="text.secondary">
+                  <Typography variant='subtitle2' color='text.secondary'>
                     ₹{item.price} each
                   </Typography>
 
                   <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
-                    <Chip icon={categoryIcon(item.category)} label={item.category} size="small" />
                     <Chip
-                      icon={item.veg ? <VegIcon fontSize="small" /> : <NonVegIcon fontSize="small" />}
+                      icon={categoryIcon(item.category)}
+                      label={item.category}
+                      size='small'
+                    />
+                    <Chip
+                      icon={
+                        item.veg ? (
+                          <VegIcon fontSize='small' />
+                        ) : (
+                          <NonVegIcon fontSize='small' />
+                        )
+                      }
                       label={item.veg ? 'Veg' : 'Non‑Veg'}
-                      size="small"
+                      size='small'
                       color={item.veg ? 'success' : 'error'}
                     />
                   </Box>
 
-                  <Box sx={{ mt: 'auto', display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      mt: 'auto',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                    }}
+                  >
                     <TextField
-                      type="number"
-                      size="small"
-                      label="Qty"
+                      type='number'
+                      size='small'
+                      label='Qty'
                       value={quantities[item._id] || 1}
                       onChange={(e) => handleQty(item._id, e.target.value)}
                       inputProps={{ min: 1, max: 99 }}
                       sx={{ width: 80 }}
                     />
                     <Button
-                      color="error"
+                      color='error'
                       startIcon={<DeleteIcon />}
                       onClick={() => handleRemove(item._id)}
                       sx={{ ml: 'auto' }}
@@ -221,10 +250,18 @@ export default function Cart() {
               gap: 2,
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 700, color: 'whitesmoke' }}>
+            <Typography
+              variant='h6'
+              sx={{ fontWeight: 700, color: 'whitesmoke' }}
+            >
               Total: ₹{totalPrice}
             </Typography>
-            <Button variant="contained" color="success" startIcon={<CartIcon />} onClick={handleCheckout}>
+            <Button
+              variant='contained'
+              color='success'
+              startIcon={<CartIcon />}
+              onClick={handleCheckout}
+            >
               Checkout
             </Button>
           </Box>
