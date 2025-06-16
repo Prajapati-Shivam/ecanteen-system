@@ -1,11 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import {
-  Typography,
-  Snackbar,
-  Alert,
-  Box,
-  Pagination,
-} from '@mui/material';
+import { Typography, Snackbar, Alert, Box, Pagination } from '@mui/material';
 import axios from 'axios';
 import { useUser } from '@clerk/clerk-react';
 import FoodCard from '../components/Food/FoodCard';
@@ -22,12 +16,14 @@ export default function Browse() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   useEffect(() => {
     const fetchItems = async () => {
       try {
         const response = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/auth/browseOrder`,
+          `${url}/api/auth/browseOrder`,
           { gmailAccount: user?.primaryEmailAddress?.emailAddress },
           { withCredentials: true }
         );
@@ -92,10 +88,10 @@ export default function Browse() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto min-h-screen text-white">
+    <div className='max-w-7xl mx-auto min-h-screen text-white'>
       <Typography
-        variant="h4"
-        align="center"
+        variant='h4'
+        align='center'
         sx={{
           fontWeight: '700',
           mb: 4,
@@ -108,13 +104,13 @@ export default function Browse() {
         Browse Food Items
       </Typography>
 
-      <Box maxWidth="400px" mx="auto" mb={6}>
+      <Box maxWidth='400px' mx='auto' mb={6}>
         <input
-          type="text"
-          placeholder="Search food items..."
+          type='text'
+          placeholder='Search food items...'
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full p-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className='w-full p-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
         />
       </Box>
 
@@ -132,8 +128,8 @@ export default function Browse() {
       >
         {currentItems.length === 0 ? (
           <Typography
-            variant="body1"
-            align="center"
+            variant='body1'
+            align='center'
             sx={{ color: 'text.secondary', gridColumn: '1 / -1' }}
           >
             No food items found.
@@ -151,37 +147,36 @@ export default function Browse() {
         )}
       </Box>
 
-        {totalPages > 1 && (
-  <Box display="flex" justifyContent="center" mt={4}>
-    <Pagination
-      count={totalPages}
-      page={currentPage}
-      onChange={(e, page) => setCurrentPage(page)}
-      shape="rounded"
-      sx={{
-        '& .MuiPaginationItem-root': {
-          color: 'white',
-          border: '1px solid white',
-          backgroundColor: 'transparent',
-          transition: 'all 0.2s ease-in-out',
-        },
-        '& .MuiPaginationItem-root:hover': {
-          backgroundColor: 'white',
-          color: 'black',
-        },
-        '& .MuiPaginationItem-root.Mui-selected': {
-          backgroundColor: 'white',
-          color: 'black',
-          border: '1px solid white',
-        },
-        '& .MuiPaginationItem-ellipsis': {
-          color: 'white',
-        },
-      }}
-    />
-  </Box>
-)}
-
+      {totalPages > 1 && (
+        <Box display='flex' justifyContent='center' mt={4}>
+          <Pagination
+            count={totalPages}
+            page={currentPage}
+            onChange={(e, page) => setCurrentPage(page)}
+            shape='rounded'
+            sx={{
+              '& .MuiPaginationItem-root': {
+                color: 'white',
+                border: '1px solid white',
+                backgroundColor: 'transparent',
+                transition: 'all 0.2s ease-in-out',
+              },
+              '& .MuiPaginationItem-root:hover': {
+                backgroundColor: 'white',
+                color: 'black',
+              },
+              '& .MuiPaginationItem-root.Mui-selected': {
+                backgroundColor: 'white',
+                color: 'black',
+                border: '1px solid white',
+              },
+              '& .MuiPaginationItem-ellipsis': {
+                color: 'white',
+              },
+            }}
+          />
+        </Box>
+      )}
 
       <Snackbar
         open={snackbar.open}

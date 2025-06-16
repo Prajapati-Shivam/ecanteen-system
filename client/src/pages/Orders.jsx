@@ -33,16 +33,22 @@ export default function Orders() {
   const [groupedOrders, setGroupedOrders] = useState({});
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success',
+  });
   const { user } = useUser();
-
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   useEffect(() => {
     if (!user) return;
     (async () => {
       try {
         const email = user.primaryEmailAddress?.emailAddress;
         const { data } = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/auth/displayOrder`,
+          `${url}/api/auth/displayOrder`,
           { gmailAccount: email },
           { withCredentials: true }
         );
@@ -52,8 +58,14 @@ export default function Orders() {
           const status = order.orderStatus || 'active';
           const dt = new Date(order.orderTime || Date.now());
           const date = dt.toISOString().split('T')[0];
-          const time = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-          const total = order.items.reduce((s, i) => s + i.price * i.quantity, 0);
+          const time = dt.toLocaleTimeString('en-GB', {
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          const total = order.items.reduce(
+            (s, i) => s + i.price * i.quantity,
+            0
+          );
 
           grouped[status] = grouped[status] || [];
           grouped[status].push({
@@ -73,10 +85,18 @@ export default function Orders() {
         });
 
         setGroupedOrders(grouped);
-        setSnackbar({ open: true, message: 'Orders loaded!', severity: 'success' });
+        setSnackbar({
+          open: true,
+          message: 'Orders loaded!',
+          severity: 'success',
+        });
       } catch (err) {
         console.error(err);
-        setSnackbar({ open: true, message: 'Failed to load orders.', severity: 'error' });
+        setSnackbar({
+          open: true,
+          message: 'Failed to load orders.',
+          severity: 'error',
+        });
       } finally {
         setLoading(false);
       }
@@ -85,10 +105,16 @@ export default function Orders() {
 
   const catIcon = (cat = '') => {
     switch (cat.toLowerCase()) {
-      case 'breakfast': return <BreakfastIcon fontSize="small" sx={{ color: '#f59e0b' }} />;
-      case 'lunch': return <LunchIcon fontSize="small" sx={{ color: '#22c55e' }} />;
-      case 'dinner': return <DinnerIcon fontSize="small" sx={{ color: '#ef4444' }} />;
-      default: return <DefaultCategoryIcon fontSize="small" sx={{ color: '#3b82f6' }} />;
+      case 'breakfast':
+        return <BreakfastIcon fontSize='small' sx={{ color: '#f59e0b' }} />;
+      case 'lunch':
+        return <LunchIcon fontSize='small' sx={{ color: '#22c55e' }} />;
+      case 'dinner':
+        return <DinnerIcon fontSize='small' sx={{ color: '#ef4444' }} />;
+      default:
+        return (
+          <DefaultCategoryIcon fontSize='small' sx={{ color: '#3b82f6' }} />
+        );
     }
   };
 
@@ -96,10 +122,10 @@ export default function Orders() {
   const orders = groupedOrders[statusKey] || [];
 
   return (
-    <div className="max-w-5xl mx-auto min-h-screen px-2 sm:px-4 py-6">
+    <div className='max-w-5xl mx-auto min-h-screen px-2 sm:px-4 py-6'>
       <Typography
-        variant="h4"
-        align="center"
+        variant='h4'
+        align='center'
         sx={{
           fontWeight: 700,
           mb: 4,
@@ -115,19 +141,33 @@ export default function Orders() {
         <Tabs
           value={tab}
           onChange={(_, v) => setTab(v)}
-          textColor="white"
-          indicatorColor="primary"
-          variant="fullWidth"
+          textColor='white'
+          indicatorColor='primary'
+          variant='fullWidth'
         >
-          <Tab icon={<ActiveIcon />} iconPosition="start" label="Active Orders" sx={{ fontWeight: 600, color: 'whitesmoke' }} />
-          <Tab icon={<CompletedIcon />} iconPosition="start" label="Completed Orders" sx={{ fontWeight: 600, color: 'whitesmoke' }} />
+          <Tab
+            icon={<ActiveIcon />}
+            iconPosition='start'
+            label='Active Orders'
+            sx={{ fontWeight: 600, color: 'whitesmoke' }}
+          />
+          <Tab
+            icon={<CompletedIcon />}
+            iconPosition='start'
+            label='Completed Orders'
+            sx={{ fontWeight: 600, color: 'whitesmoke' }}
+          />
         </Tabs>
       </Box>
 
       {loading ? (
-        <Box className="flex justify-center items-center h-40"><CircularProgress /></Box>
+        <Box className='flex justify-center items-center h-40'>
+          <CircularProgress />
+        </Box>
       ) : orders.length === 0 ? (
-        <Typography align="center" className="text-gray-50">No {statusKey} orders found.</Typography>
+        <Typography align='center' className='text-gray-50'>
+          No {statusKey} orders found.
+        </Typography>
       ) : (
         <Box>
           {orders.map((group) => (
@@ -142,13 +182,21 @@ export default function Orders() {
               }}
             >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography sx={{ fontWeight: 'bold', flexGrow: 1 }}>Order ID: {group.orderId.slice(-6)}</Typography>
+                <Typography sx={{ fontWeight: 'bold', flexGrow: 1 }}>
+                  Order ID: {group.orderId.slice(-6)}
+                </Typography>
                 <Chip
-                  size="small"
+                  size='small'
                   clickable={false}
                   label={statusKey.toUpperCase()}
                   color={statusKey === 'completed' ? 'success' : 'warning'}
-                  icon={statusKey === 'completed' ? <CompletedIcon fontSize="small" /> : <ActiveIcon fontSize="small" />}
+                  icon={
+                    statusKey === 'completed' ? (
+                      <CompletedIcon fontSize='small' />
+                    ) : (
+                      <ActiveIcon fontSize='small' />
+                    )
+                  }
                 />
               </AccordionSummary>
               <AccordionDetails>
@@ -164,17 +212,36 @@ export default function Orders() {
                     }}
                   >
                     <CardContent>
-                      <Typography variant="h6" sx={{ fontWeight: 600 }}>{item.name}</Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-                        ₹{item.price} × {item.quantity} = ₹{item.price * item.quantity}
+                      <Typography variant='h6' sx={{ fontWeight: 600 }}>
+                        {item.name}
+                      </Typography>
+                      <Typography
+                        variant='body2'
+                        sx={{ color: 'text.secondary', mb: 1 }}
+                      >
+                        ₹{item.price} × {item.quantity} = ₹
+                        {item.price * item.quantity}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                        <Chip icon={catIcon(item.category)} label={item.category} size="small" variant="outlined" color="primary" clickable={false} />
                         <Chip
-                          icon={item.veg ? <VegIcon fontSize="small" /> : <NonVegIcon fontSize="small" />}
+                          icon={catIcon(item.category)}
+                          label={item.category}
+                          size='small'
+                          variant='outlined'
+                          color='primary'
+                          clickable={false}
+                        />
+                        <Chip
+                          icon={
+                            item.veg ? (
+                              <VegIcon fontSize='small' />
+                            ) : (
+                              <NonVegIcon fontSize='small' />
+                            )
+                          }
                           label={item.veg ? 'Veg' : 'Non‑Veg'}
-                          size="small"
-                          variant="outlined"
+                          size='small'
+                          variant='outlined'
                           color={item.veg ? 'success' : 'error'}
                           clickable={false}
                         />
@@ -184,8 +251,10 @@ export default function Orders() {
                 ))}
 
                 <Divider sx={{ my: 1 }} />
-                <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>Total Price: ₹{group.total}</Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='body2' sx={{ fontWeight: 600, mb: 0.5 }}>
+                  Total Price: ₹{group.total}
+                </Typography>
+                <Typography variant='caption' color='text.secondary'>
                   Ordered on: {group.date} at {group.time}
                 </Typography>
               </AccordionDetails>
@@ -200,7 +269,11 @@ export default function Orders() {
         onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert severity={snackbar.severity} onClose={() => setSnackbar((s) => ({ ...s, open: false }))} sx={{ fontSize: '1rem', borderRadius: 2 }}>
+        <Alert
+          severity={snackbar.severity}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          sx={{ fontSize: '1rem', borderRadius: 2 }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>

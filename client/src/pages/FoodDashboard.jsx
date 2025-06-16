@@ -16,7 +16,6 @@ import ViewFoodItems from '../components/Food/ViewFoodItems';
 
 function FoodDashboard() {
   const [tab, setTab] = useState('create');
-
   const [foodForm, setFoodForm] = useState({
     name: '',
     image: '',
@@ -24,23 +23,19 @@ function FoodDashboard() {
     veg: true,
     category: '',
   });
-
   const [foodItems, setFoodItems] = useState([]);
   const [search, setSearch] = useState('');
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
     severity: 'success', // 'error', 'info', 'warning'
   });
-
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
 
   const handleTabChange = (event, newValue) => setTab(newValue);
-
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddFood = async () => {
     const { name, price, category, veg, image } = foodForm;
@@ -65,7 +60,6 @@ function FoodDashboard() {
         );
 
         showSnackbar('Food item added successfully!', 'success');
-
         setFoodItems([
           ...foodItems,
           { ...foodForm, id: res.data.item_id, availability: true },
@@ -90,14 +84,15 @@ function FoodDashboard() {
     setIsSubmitting(false);
   };
 
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
+
   const fetchItems = async () => {
     try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/admin/fetchItems`,
-        {
-          withCredentials: true,
-        }
-      );
+      const res = await axios.get(`${url}/api/admin/fetchItems`, {
+        withCredentials: true,
+      });
       const items = res.data.items || [];
       const transformed = items.map(({ _id, ...rest }) => ({
         id: _id,

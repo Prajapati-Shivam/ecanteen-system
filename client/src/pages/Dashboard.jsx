@@ -26,7 +26,9 @@ function Dashboard() {
     setSnackbar({ open: true, message, severity });
   };
 
-  const url = import.meta.env.VITE_API_URL;
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
 
   const handleDelete = async () => {
     const confirmed = window.confirm(

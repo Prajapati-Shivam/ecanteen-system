@@ -26,7 +26,9 @@ function OrderRow({ order, onStatusUpdate }) {
   const [open, setOpen] = React.useState(false);
   const [status, setStatus] = React.useState(order.orderStatus);
   const [loading, setLoading] = React.useState(false);
-
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -34,7 +36,7 @@ function OrderRow({ order, onStatusUpdate }) {
 
     try {
       await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/admin/updateOrderStatus`,
+        `${url}/api/admin/updateOrderStatus`,
         {
           id: order._id,
           orderStatus: newStatus,
@@ -125,14 +127,16 @@ function OrderRow({ order, onStatusUpdate }) {
 export default function OrderComplete() {
   const [orders, setOrders] = React.useState([]);
   const { user } = useUser();
-
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   React.useEffect(() => {
     const fetchOrders = async () => {
       if (!user) return;
 
       try {
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/admin/fetchCompletedOrder`,
+          `${url}/api/admin/fetchCompletedOrder`,
           { withCredentials: true }
         );
         // sort orders by order time in descending order
