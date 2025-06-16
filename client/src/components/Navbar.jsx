@@ -52,25 +52,23 @@ const Navbar = () => {
   return (
     <div className='fixed top-0 left-0 w-full z-50'>
       <div className='m-4'>
-        <nav className='rounded-3xl bg-gray-50 border border-gray-200 shadow-sm px-4 py-2'>
+        <nav className='rounded-3xl bg-white border border-gray-200 shadow-sm px-4 py-2'>
           <div className='max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-2 py-2'>
             {/* Logo */}
             <Link
               to='/'
-              className='text-3xl font-bold text-black hover:tracking-wider hover:scale-110 transition-all duration-300'
+              className='text-3xl font-extrabold text-black tracking-tight hover:tracking-wide transition-all duration-300'
             >
               {CONSTANTS.APP_NAME}
             </Link>
 
-            {/* Mobile Menu Toggle */}
+            {/* Mobile Toggle Button */}
             <button
               onClick={toggleMenu}
               type='button'
-              className='inline-flex items-center p-2 w-10 h-10 justify-center rounded-lg md:hidden hover:bg-gray-200 focus:outline-none'
-              aria-controls='navbar-default'
-              aria-expanded={isOpen ? 'true' : 'false'}
+              className='md:hidden flex items-center justify-center w-10 h-10 rounded-full border border-gray-300 hover:bg-gray-100 focus:outline-none transition'
+              aria-label='Toggle menu'
             >
-              <span className='sr-only'>Toggle menu</span>
               {isOpen ? (
                 <svg
                   className='w-6 h-6 text-black'
@@ -102,18 +100,18 @@ const Navbar = () => {
 
             {/* Nav Links */}
             <div
-              className={`w-full md:block md:w-auto transition-all duration-300 ease-in-out ${
+              className={`w-full md:w-auto transition-all duration-300 ease-in-out ${
                 isOpen ? 'block' : 'hidden'
-              }`}
+              } md:flex md:items-center md:space-x-5`}
               id='navbar-default'
             >
-              <ul className='font-medium flex flex-col md:flex-row md:space-x-5 mt-4 md:mt-0 text-black'>
+              <ul className='font-medium flex flex-col md:flex-row mt-4 md:mt-0 text-black md:items-center gap-y-2 md:gap-y-0 gap-x-4'>
                 {activeLinks.map((link) => (
                   <li key={link.name}>
                     <Link
                       to={link.path}
                       onClick={() => setIsOpen(false)}
-                      className={`block py-2 px-4 rounded transition-all duration-300 ${
+                      className={`block py-2 px-4 rounded-md text-center md:text-left transition-all duration-200 ${
                         location.pathname === link.path
                           ? 'bg-black text-white'
                           : 'hover:bg-black hover:text-white'
@@ -124,9 +122,9 @@ const Navbar = () => {
                   </li>
                 ))}
 
-                <li>
+                <li className='mt-2 md:mt-0'>
                   {isSignedIn ? (
-                    <div className='flex items-center space-x-5'>
+                    <div className='flex justify-center md:justify-start'>
                       <UserButton
                         userProfileMode='navigation'
                         appearance={{
@@ -144,7 +142,7 @@ const Navbar = () => {
                         fallbackRedirectUrl='/user-form'
                         signUpForceRedirectUrl='/user-form'
                       >
-                        <Button variant='contained' color='primary'>
+                        <Button fullWidth variant='contained' color='primary'>
                           Login
                         </Button>
                       </SignInButton>
