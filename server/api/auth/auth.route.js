@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { clerkMiddleware } = require('@clerk/express');
+const { clerkMiddleware } = require("@clerk/express");
 
 const authController = require("./auth.controller");
 
@@ -11,8 +11,9 @@ router.post("/addUser", authController.addUser);
 router.post("/addOrder", authController.addOrder);
 router.post("/displayOrder", authController.displayOrder);
 router.post("/browseOrder", authController.browseOrder);
+router.post("/payment", authController.payment);
 
 router.use(clerkMiddleware());
-router.delete('/deleteAccount', authController.deleteAccount);
+router.delete("/deleteAccount", authController.deleteAccount);
 
 module.exports = router;
