@@ -1,5 +1,8 @@
 // 👇 your imports stay the same
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
+import { load } from "@cashfreepayments/cashfree-js";
+import axios from "axios";
+
 import {
   FreeBreakfast as BreakfastIcon,
   LunchDining as LunchIcon,
@@ -9,8 +12,8 @@ import {
   KebabDining as NonVegIcon,
   ShoppingCart as CartIcon,
   Delete as DeleteIcon,
-} from '@mui/icons-material';
-import { useUser } from '@clerk/clerk-react';
+} from "@mui/icons-material";
+import { useUser } from "@clerk/clerk-react";
 import {
   Typography,
   Card,
@@ -22,7 +25,7 @@ import {
   Snackbar,
   Alert,
   Chip,
-} from '@mui/material';
+} from "@mui/material";
 
 export default function Cart() {
   const { user } = useUser();
@@ -31,12 +34,19 @@ export default function Cart() {
   const [quantities, setQuantities] = useState({});
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: '',
-    severity: 'success',
+    message: "",
+    severity: "success",
   });
+  const [cashfree, setCashfree] = useState(null);
 
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem('cart')) || [];
+    //initializing the cashfreeskd
+    async function iniSDK() {
+      const cf = await load({ mode: "sandbox" });
+      setCashfree(cf);
+    }
+    iniSDK();
+    const stored = JSON.parse(localStorage.getItem("cart")) || [];
     const valid = stored.filter((it) => it._id);
     setCartItems(valid);
     const qtyMap = {};
@@ -44,19 +54,19 @@ export default function Cart() {
     setQuantities(qtyMap);
   }, []);
 
-  const showMsg = (message, severity = 'success') =>
+  const showMsg = (message, severity = "success") =>
     setSnackbar({ open: true, message, severity });
 
-  const categoryIcon = (cat = '') => {
+  const categoryIcon = (cat = "") => {
     switch (cat.toLowerCase()) {
-      case 'breakfast':
-        return <BreakfastIcon fontSize='small' sx={{ color: '#facc15' }} />;
-      case 'lunch':
-        return <LunchIcon fontSize='small' sx={{ color: '#22c55e' }} />;
-      case 'dinner':
-        return <DinnerIcon fontSize='small' sx={{ color: '#ef4444' }} />;
+      case "breakfast":
+        return <BreakfastIcon fontSize="small" sx={{ color: "#facc15" }} />;
+      case "lunch":
+        return <LunchIcon fontSize="small" sx={{ color: "#22c55e" }} />;
+      case "dinner":
+        return <DinnerIcon fontSize="small" sx={{ color: "#ef4444" }} />;
       default:
-        return <DefaultIcon fontSize='small' sx={{ color: '#3b82f6' }} />;
+        return <DefaultIcon fontSize="small" sx={{ color: "#3b82f6" }} />;
     }
   };
 
@@ -67,24 +77,48 @@ export default function Cart() {
     );
     setCartItems(updated);
     setQuantities((p) => ({ ...p, [_id]: qty }));
-    localStorage.setItem('cart', JSON.stringify(updated));
+    localStorage.setItem("cart", JSON.stringify(updated));
   };
 
   const handleRemove = (_id) => {
     const updated = cartItems.filter((it) => it._id !== _id);
     setCartItems(updated);
-    localStorage.setItem('cart', JSON.stringify(updated));
-    showMsg('Item removed from cart.', 'info');
+    localStorage.setItem("cart", JSON.stringify(updated));
+    showMsg("Item removed from cart.", "info");
   };
 
   const totalPrice = cartItems.reduce((s, it) => s + it.price * it.quantity, 0);
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : "http://localhost:3001";
 
+  async function getsessionId() {
+    const gmailAccount = user?.primaryEmailAddress?.emailAddress;
+    const Name = user?.fullName;
+    console.log(gmailAccount);
+
+    try {
+      const res = await axios.post(`${url}/api/auth/payment`, {
+        gmailAccount: gmailAccount,
+        Name: Name,
+        totalPrice: totalPrice,
+      });
+      if (res) {
+        console.log("gsid ", res.data.order_id);
+        return res.data.payment_session_id;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
   // ✅✅ FIXED Checkout function
-  const handleCheckout = async () => {
-    if (!cartItems.length) return showMsg('Your cart is empty!', 'warning');
+  const handleCheckout = async (e) => {
+    e.preventDefault();
+
+    if (!cartItems.length) return showMsg("Your cart is empty!", "warning");
 
     const gmailAccount = user?.primaryEmailAddress?.emailAddress;
-    if (!gmailAccount) return showMsg('User email not found!', 'error');
+    if (!gmailAccount) return showMsg("User email not found!", "error");
 
     const transformedItems = cartItems.map((item) => ({
       item_id: item._id, // Server expects item_id
@@ -99,62 +133,74 @@ export default function Cart() {
       gmailAccount,
     };
 
-    const url = import.meta.env.PROD
-      ? import.meta.env.VITE_API_URL
-      : 'http://localhost:3001';
-
     try {
+      const sessionId = await getsessionId();
+      if (!sessionId) return alert("Cashfree not initialized");
+
+      const checkout_opt = {
+        paymentSessionId: sessionId,
+        redirectTarget: "_modal",
+      };
+
+      await cashfree.checkout(checkout_opt).then((response) => {
+        if (response) {
+          alert("Payment Successfull");
+        } else {
+          alert("Payment not Successfull");
+        }
+      });
+
       const res = await fetch(`${url}/api/auth/addOrder`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: "include",
       });
 
       const data = await res.json().catch(() => ({}));
-      console.log('Checkout response:', data);
+      console.log("Checkout response:", data);
 
       if (res.ok && data.status) {
-        localStorage.removeItem('cart');
+        localStorage.removeItem("cart");
         setCartItems([]);
         setQuantities({});
-        showMsg('Checkout successful! Thank you for your order.');
+        showMsg("Checkout successful! Thank you for your order.");
       } else {
-        throw new Error(data.message || 'Checkout failed');
+        throw new Error(data.message || "Checkout failed");
       }
     } catch (err) {
       console.error(err);
-      showMsg(err.message, 'error');
+      showMsg(err.message, "error");
     }
   };
 
   return (
-    <div className='max-w-5xl mx-auto min-h-screen'>
+    <div className="max-w-5xl mx-auto min-h-screen">
       <Typography
-        variant='h4'
-        align='center'
+        variant="h4"
+        align="center"
         sx={{
           fontWeight: 700,
           mb: 4,
-          background: 'linear-gradient(45deg,#22c55e,#3b82f6)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          fontSize: { xs: '1.8rem', sm: '2.5rem' },
+          background: "linear-gradient(45deg,#22c55e,#3b82f6)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          fontSize: { xs: "1.8rem", sm: "2.5rem" },
         }}
       >
         Your Cart
       </Typography>
 
       {!cartItems.length ? (
-        <Typography variant='body1' align='center' color='white'>
+        <Typography variant="body1" align="center" color="white">
           Your cart is empty.
         </Typography>
       ) : (
         <>
           <Box
             sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: '1fr', sm: 'repeat(2,1fr)' },
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2,1fr)" },
               gap: 3,
             }}
           >
@@ -162,76 +208,76 @@ export default function Cart() {
               <Card
                 key={item._id}
                 sx={{
-                  display: 'flex',
-                  flexDirection: { xs: 'column', sm: 'row' },
+                  display: "flex",
+                  flexDirection: { xs: "column", sm: "row" },
                   borderRadius: 3,
                   boxShadow: 3,
                 }}
               >
                 <CardMedia
-                  component='img'
+                  component="img"
                   image={item.image}
                   alt={item.name}
                   sx={{
-                    width: { xs: '100%', sm: 120 },
-                    height: { xs: 160, sm: 'auto' },
-                    objectFit: 'cover',
-                    borderRadius: { xs: '12px 12px 0 0', sm: '12px 0 0 12px' },
+                    width: { xs: "100%", sm: 120 },
+                    height: { xs: 160, sm: "auto" },
+                    objectFit: "cover",
+                    borderRadius: { xs: "12px 12px 0 0", sm: "12px 0 0 12px" },
                   }}
                 />
 
                 <CardContent
-                  sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+                  sx={{ flex: 1, display: "flex", flexDirection: "column" }}
                 >
-                  <Typography variant='h6' sx={{ fontWeight: 700 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 700 }}>
                     {item.name}
                   </Typography>
-                  <Typography variant='subtitle2' color='text.secondary'>
+                  <Typography variant="subtitle2" color="text.secondary">
                     ₹{item.price} each
                   </Typography>
 
-                  <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                  <Box sx={{ mt: 1, display: "flex", gap: 1 }}>
                     <Chip
                       icon={categoryIcon(item.category)}
                       label={item.category}
-                      size='small'
+                      size="small"
                     />
                     <Chip
                       icon={
                         item.veg ? (
-                          <VegIcon fontSize='small' />
+                          <VegIcon fontSize="small" />
                         ) : (
-                          <NonVegIcon fontSize='small' />
+                          <NonVegIcon fontSize="small" />
                         )
                       }
-                      label={item.veg ? 'Veg' : 'Non‑Veg'}
-                      size='small'
-                      color={item.veg ? 'success' : 'error'}
+                      label={item.veg ? "Veg" : "Non‑Veg"}
+                      size="small"
+                      color={item.veg ? "success" : "error"}
                     />
                   </Box>
 
                   <Box
                     sx={{
-                      mt: 'auto',
-                      display: 'flex',
-                      alignItems: 'center',
+                      mt: "auto",
+                      display: "flex",
+                      alignItems: "center",
                       gap: 1,
                     }}
                   >
                     <TextField
-                      type='number'
-                      size='small'
-                      label='Qty'
+                      type="number"
+                      size="small"
+                      label="Qty"
                       value={quantities[item._id] || 1}
                       onChange={(e) => handleQty(item._id, e.target.value)}
                       inputProps={{ min: 1, max: 99 }}
                       sx={{ width: 80 }}
                     />
                     <Button
-                      color='error'
+                      color="error"
                       startIcon={<DeleteIcon />}
                       onClick={() => handleRemove(item._id)}
-                      sx={{ ml: 'auto' }}
+                      sx={{ ml: "auto" }}
                     >
                       Remove
                     </Button>
@@ -244,21 +290,21 @@ export default function Cart() {
           <Box
             sx={{
               mt: 6,
-              display: 'flex',
-              justifyContent: 'space-between',
-              flexWrap: 'wrap',
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
               gap: 2,
             }}
           >
             <Typography
-              variant='h6'
-              sx={{ fontWeight: 700, color: 'whitesmoke' }}
+              variant="h6"
+              sx={{ fontWeight: 700, color: "whitesmoke" }}
             >
               Total: ₹{totalPrice}
             </Typography>
             <Button
-              variant='contained'
-              color='success'
+              variant="contained"
+              color="success"
               startIcon={<CartIcon />}
               onClick={handleCheckout}
             >
@@ -272,12 +318,12 @@ export default function Cart() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar((p) => ({ ...p, open: false }))}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           onClose={() => setSnackbar((p) => ({ ...p, open: false }))}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>

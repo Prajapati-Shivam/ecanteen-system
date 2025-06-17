@@ -1,8 +1,11 @@
 const { Admin, User, Order, Item } = require("../../models");
 const { clerkClient } = require("@clerk/clerk-sdk-node");
 
-const { getAuth } = require('@clerk/express');
-const { users } = require('@clerk/clerk-sdk-node');
+const { getAuth } = require("@clerk/express");
+const { users } = require("@clerk/clerk-sdk-node");
+const { Cashfree } = require("cashfree-pg");
+require("dotenv").config();
+const crypto = require("crypto");
 
 const check = async (req, res) => {
   const { UserEmail, Collegename, UserName, College_id } = req.body;
@@ -243,19 +246,62 @@ const deleteAccount = async (req, res) => {
     (email) => email.id === user.primaryEmailAddressId
   );
   const user_email = primaryEmail?.emailAddress; //Get Registered User_Email from clerk
-  
+
   try {
     await clerkClient.users.deleteUser(userId); //Delete the user data from clerk
-    await User.deleteOne({ email: user_email}); //Delete the user data from DB
-    
-    return res.status(200).json({ status: 'deleted', message: "Account deleted successfully" });
-  }catch(err){
+    await User.deleteOne({ email: user_email }); //Delete the user data from DB
+
+    return res
+      .status(200)
+      .json({ status: "deleted", message: "Account deleted successfully" });
+  } catch (err) {
     console.error("Error deleting user:", err);
-    return res.status(500).json({ status: 'error', message: "Internal Server Error" });
+    return res
+      .status(500)
+      .json({ status: "error", message: "Internal Server Error" });
   }
+};
 
-
+function generateOrderId() {
+  const uniqueId = crypto.randomBytes(16).toString("hex");
+  const hash = crypto.createHash("sha256").update(uniqueId).digest("hex");
+  return hash.substring(0, 12);
 }
+const cashfree = new Cashfree(
+  Cashfree.SANDBOX, // or Cashfree.PRODUCTION
+  process.env.CASHFREE_APP_ID,
+  process.env.CASHFREE_SECRET_KEY
+);
+const payment = async (req, res) => {
+  const { gmailAccount, Name, totalPrice } = req.body;
+  try {
+    const orderId = generateOrderId();
+    const order = {
+      order_id: orderId,
+      order_amount: totalPrice,
+      order_currency: "INR",
+      customer_details: {
+        customer_id: "123",
+        customer_name: Name,
+        customer_email: gmailAccount,
+        customer_phone: "1111111111",
+      },
+    };
+
+    const { data } = await cashfree.PGCreateOrder(order);
+    // return both session and order_id to frontend
+    res.json({
+      payment_session_id: data.payment_session_id,
+      order_id: orderId,
+    });
+  } catch (error) {
+    console.error(
+      "Error creating order:",
+      error.response?.data || error.message
+    );
+    res.status(500).json({ error: error.message });
+  }
+};
 
 module.exports = {
   check,
@@ -264,5 +310,6 @@ module.exports = {
   addOrder,
   displayOrder,
   browseOrder,
-  deleteAccount
+  deleteAccount,
+  payment,
 };
