@@ -16,9 +16,7 @@ export default function Browse() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
-  const url = import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : 'http://localhost:3001';
+  const url = import.meta.env.VITE_API_URL || window.location.origin;
   useEffect(() => {
     const fetchItems = async () => {
       try {
