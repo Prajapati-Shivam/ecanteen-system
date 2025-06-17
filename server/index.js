@@ -23,7 +23,7 @@ app.use('/api', apiRoutes); // Use API routes
 
 app.use(express.static(pathModule .join(__dirname, '../client/dist')));
 app.get('/*\w', (req, res) => {
-  res.sendFile(pathModule .resolve(__dirname, '../client/index.html'));
+  res.sendFile(pathModule .resolve(__dirname, '../client/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
