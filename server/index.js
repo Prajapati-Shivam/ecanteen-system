@@ -13,7 +13,6 @@ connectDB(); // Connect to MongoDB
 
 // Middleware to parse incoming JSON and enable CORS
 app.use(express.json());
-app.use(express.static(pathModule .join(__dirname, '../client/dist')));
 
 // Basic route to test server
 app.get('/test', (req, res) => {
@@ -22,6 +21,7 @@ app.get('/test', (req, res) => {
 
 app.use('/api', apiRoutes); // Use API routes
 
+app.use(express.static(pathModule .join(__dirname, '../client/dist')));
 app.get('/*\w', (req, res) => {
   res.sendFile(pathModule .resolve(__dirname, '../client/index.html'));
 });
