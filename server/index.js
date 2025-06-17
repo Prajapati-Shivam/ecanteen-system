@@ -1,6 +1,6 @@
 // Load environment variables from .env file
 require('dotenv').config();
-const pathModule  = require('path');
+const pathModule = require('path');
 
 const express = require('express');
 const app = express();
@@ -11,6 +11,14 @@ const apiRoutes = require('./api'); // API routes
 const connectDB = require('./utils/db'); // MongoDB connection function
 connectDB(); // Connect to MongoDB
 
+if (process.env.NODE_ENV !== 'production') {
+  app.use(
+    cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+    })
+  );
+}
 // Middleware to parse incoming JSON and enable CORS
 app.use(express.json());
 
@@ -21,13 +29,12 @@ app.get('/test', (req, res) => {
 
 app.use('/api', apiRoutes); // Use API routes
 
-app.use(express.static(pathModule .join(__dirname, '../client/dist')));
-app.get('/*\w', (req, res) => {
-  res.sendFile(pathModule .resolve(__dirname, '../client/dist/index.html'));
+app.use(express.static(pathModule.join(__dirname, '../client/dist')));
+app.get('/*w', (req, res) => {
+  res.sendFile(pathModule.resolve(__dirname, '../client/dist/index.html'));
 });
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log('Server up and running...');
 });
-
