@@ -39,9 +39,7 @@ export default function Orders() {
     severity: 'success',
   });
   const { user } = useUser();
-  const url = import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : 'http://localhost:3001';
+  const url = import.meta.env.VITE_API_URL || window.location.origin;
   useEffect(() => {
     if (!user) return;
     (async () => {

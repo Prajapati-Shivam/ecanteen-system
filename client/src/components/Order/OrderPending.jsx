@@ -26,9 +26,7 @@ function OrderRow({ order, onStatusUpdate }) {
   const [open, setOpen] = React.useState(false);
   const [status, setStatus] = React.useState(order.orderStatus);
   const [loading, setLoading] = React.useState(false);
-  const url = import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : 'http://localhost:3001';
+  const url = import.meta.env.VITE_API_URL || window.location.origin;
   const handleStatusChange = async (e) => {
     const newStatus = e.target.value;
     setStatus(newStatus);
@@ -127,9 +125,7 @@ function OrderRow({ order, onStatusUpdate }) {
 export default function OrderPending() {
   const [orders, setOrders] = React.useState([]);
   const { user } = useUser();
-  const url = import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : 'http://localhost:3001';
+  const url = import.meta.env.VITE_API_URL || window.location.origin;
   React.useEffect(() => {
     const fetchOrders = async () => {
       if (!user) return;
