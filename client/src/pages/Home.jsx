@@ -133,7 +133,7 @@ export default function Home() {
           </p>
 
           <Box className='mt-8 flex justify-center md:justify-start gap-4'>
-           
+{/*            
 <SignInButton mode='modal' >
   <Button
     variant='contained'
@@ -142,7 +142,7 @@ export default function Home() {
   >
     Get Started
   </Button>
-</SignInButton>
+</SignInButton> */}
 
              
           </Box>
