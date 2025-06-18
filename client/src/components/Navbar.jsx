@@ -142,7 +142,7 @@ const Navbar = () => {
                         fallbackRedirectUrl='/user-form'
                         signUpForceRedirectUrl='/user-form'
                       >
-                        <Button fullWidth variant='contained' color='primary'>
+                        <Button fullWidth variant='contained' className='bg-gradient-to-tr from-green-400 to-blue-500 text-black'>
                           Login
                         </Button>
                       </SignInButton>
