@@ -13,6 +13,7 @@ import Orders from './pages/Orders';
 import ProtectedRoute from './util/ProtectedRoute';
 import RoleCheck from './util/RoleCheck';
 import ViewOrders from './pages/ViewOrders';
+import Error from './pages/Error';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path='/about' element={<About />} />
           <Route path='/contact' element={<About />} />
           <Route path='/user-form' element={<UserForm />} />
+           <Route path="*" element={<Error />} /> 
 
           {/* Protected Routes - Require Login */}
           <Route element={<ProtectedRoute />}>
