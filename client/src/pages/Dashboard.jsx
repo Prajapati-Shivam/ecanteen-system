@@ -11,7 +11,8 @@ import {
   Select,
   FormControl,
   InputLabel,
-  CircularProgress,Button
+  CircularProgress,
+  Button,
 } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
@@ -24,10 +25,8 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import DownloadIcon from '@mui/icons-material/Download';
 
- import DownloadIcon from '@mui/icons-material/Download';
-
- 
 function Dashboard() {
   const { user } = useUser();
   const { signOut } = useAuth();
@@ -41,9 +40,7 @@ function Dashboard() {
     setSnackbar({ open: true, message, severity });
   };
 
- 
-
-useEffect(() => {
+  useEffect(() => {
     const fetchOrders = async () => {
       try {
         const { data } = await axios.get(`${url}/api/admin/fetchAllOrder`, {
@@ -62,8 +59,6 @@ useEffect(() => {
     fetchOrders();
   }, []);
 
-
-
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete your account?')) return;
 
@@ -79,22 +74,33 @@ useEffect(() => {
     }
   };
 
+  // ✅ FIXED: Use .local() to handle IST time filtering
   const filteredOrders = orders.filter(order => {
-    const date = dayjs(order.createdAt);
+    if (!order.createdAt) return false;
+
+    const date = dayjs(order.createdAt).local(); // convert to IST
     const today = dayjs();
 
     switch (filterType) {
-      case 'weekdays': return ![0, 6].includes(date.day());
-      case 'weekends': return [0, 6].includes(date.day());
-      case 'day': return date.isSame(today, 'day');
-      case 'month': return date.isSame(today, 'month');
-      case 'year': return date.isSame(today, 'year');
+      case 'weekdays':
+        return ![0, 6].includes(date.day());
+      case 'weekends':
+        return [0, 6].includes(date.day());
+      case 'day':
+        return date.isSame(today, 'day');
+      case 'month':
+        return date.isSame(today, 'month');
+      case 'year':
+        return date.isSame(today, 'year');
       case 'all':
-      default: return true;
+      default:
+        return true;
     }
   });
 
-  const ordersToday = orders.filter(order => dayjs(order.createdAt).isSame(dayjs(), 'day'));
+  const ordersToday = orders.filter(order =>
+    dayjs(order.createdAt).local().isSame(dayjs(), 'day')
+  );
 
   const itemFrequencyByFilter = {};
   filteredOrders.forEach(order => {
@@ -112,15 +118,12 @@ useEffect(() => {
 
   const filteredChartData = getTopItems(itemFrequencyByFilter);
 
-   
-
-  
   if (loading) {
     return (
       <Box sx={{ minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-      <CircularProgress size={60} thickness={5} />
-    </Box>
-  );
+        <CircularProgress size={60} thickness={5} />
+      </Box>
+    );
   }
 
   return (
@@ -140,26 +143,25 @@ useEffect(() => {
             Dashboard
           </Typography>
           <div className='flex items-center gap-x-6'>
-        
-<Button onClick={console.log("downloaded")} variant="contained" className='bg-gradient-to-tr from-green-400 to-blue-500' startIcon={<DownloadIcon />}>
-  Export Orders
-</Button>
+            <Button
+              onClick={() => console.log('downloaded')}
+              variant="contained"
+              className='bg-gradient-to-tr from-green-400 to-blue-500'
+              startIcon={<DownloadIcon />}
+            >
+              Export Orders
+            </Button>
 
             <Typography align='right' fontWeight='bold'>
               Role: {user?.publicMetadata?.role.toUpperCase()}<br />
               College ID: {user?.publicMetadata?.college_id}
             </Typography>
 
-            
             <DeleteIcon fontSize='medium' className='text-red-400 cursor-pointer' onClick={handleDelete} />
           </div>
-
-  
         </div>
 
-
         <Box className='mt-10 grid grid-cols-1 md:grid-cols-2 gap-6'>
-          
           <Paper className='p-6'>
             <Typography variant='h6'>Orders Today</Typography>
             <Typography variant='h4'>{ordersToday.length}</Typography>
@@ -169,79 +171,77 @@ useEffect(() => {
             <Typography variant='h6'>Total Orders</Typography>
             <Typography variant='h4'>{orders.length}</Typography>
           </Paper>
- 
- 
-           <Box sx={{ px: 2, mt: 2 }}>
-  <FormControl
-    fullWidth
-    variant="outlined"
-    sx={{
-      mt: 1,
-      maxWidth: 300,
-      '& .MuiOutlinedInput-root': {
-        backgroundColor: '#030712', // Black input box
-        color: 'white', // Gray input text
-        borderRadius: 2,
-        '& fieldset': {
-          borderColor: '#555',
-        },
-        '&:hover fieldset': {
-          borderColor: '#22c55e',
-        },
-        '&.Mui-focused fieldset': {
-          borderColor: '#3b82f6',
-        },
-      },
-      '& .MuiInputLabel-root': {
-        color: '#ffffff', // White label (on black background)
-        '&.Mui-focused': {
-          color: '#3b82f6',
-        },
-      },
-      '& .MuiSvgIcon-root': {
-        color: '#000000', // Dropdown arrow matches input text
-      },
-    }}
-  >
-    <InputLabel id="filter-label">Filter By</InputLabel>
-    <Select
-      labelId="filter-label"
-      value={filterType}
-      label="Filter By"
-      onChange={(e) => setFilterType(e.target.value)}
-      MenuProps={{
-        PaperProps: {
-          sx: {
-            backgroundColor: '#ffffff', // White dropdown
-            color: '#000000', // Black text
-            mt: 1,
-            '& .MuiMenuItem-root': {
-              fontWeight: 500,
-              color: '#000000',
-            },
-            '& .MuiMenuItem-root:hover': {
-              backgroundColor: '#f0f0f0',
-            },
-            '& .Mui-selected': {
-              backgroundColor: '#e0e0e0',
-              '&:hover': {
-                backgroundColor: '#d4d4d4',
-              },
-            },
-          },
-        },
-      }}
-    >
-      <MenuItem value="weekdays">Weekdays</MenuItem>
-      <MenuItem value="weekends">Weekends</MenuItem>
-      <MenuItem value="day">Today</MenuItem>
-      <MenuItem value="month">This Month</MenuItem>
-      <MenuItem value="year">This Year</MenuItem>
-      <MenuItem value="all">All Time</MenuItem>
-    </Select>
-  </FormControl>
-</Box>
 
+          <Box sx={{ px: 2, mt: 2 }}>
+            <FormControl
+              fullWidth
+              variant="outlined"
+              sx={{
+                mt: 1,
+                maxWidth: 300,
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: '#030712',
+                  color: 'white',
+                  borderRadius: 2,
+                  '& fieldset': {
+                    borderColor: '#555',
+                  },
+                  '&:hover fieldset': {
+                    borderColor: '#22c55e',
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#3b82f6',
+                  },
+                },
+                '& .MuiInputLabel-root': {
+                  color: '#ffffff',
+                  '&.Mui-focused': {
+                    color: '#3b82f6',
+                  },
+                },
+                '& .MuiSvgIcon-root': {
+                  color: '#000000',
+                },
+              }}
+            >
+              <InputLabel id="filter-label">Filter By</InputLabel>
+              <Select
+                labelId="filter-label"
+                value={filterType}
+                label="Filter By"
+                onChange={(e) => setFilterType(e.target.value)}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      backgroundColor: '#ffffff',
+                      color: '#000000',
+                      mt: 1,
+                      '& .MuiMenuItem-root': {
+                        fontWeight: 500,
+                        color: '#000000',
+                      },
+                      '& .MuiMenuItem-root:hover': {
+                        backgroundColor: '#f0f0f0',
+                      },
+                      '& .Mui-selected': {
+                        backgroundColor: '#e0e0e0',
+                        '&:hover': {
+                          backgroundColor: '#d4d4d4',
+                        },
+                      },
+                    },
+                  },
+                }}
+              >
+                <MenuItem value="weekdays">Weekdays</MenuItem>
+                <MenuItem value="weekends">Weekends</MenuItem>
+                <MenuItem value="day">Today</MenuItem>
+                <MenuItem value="month">This Month</MenuItem>
+                <MenuItem value="year">This Year</MenuItem>
+                <MenuItem value="all">All Time</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
 
           <Paper className='p-6 md:col-span-2'>
             <Typography variant='h6'>
@@ -256,8 +256,6 @@ useEffect(() => {
               </BarChart>
             </ResponsiveContainer>
           </Paper>
-
-
         </Box>
       </Container>
 
@@ -280,7 +278,3 @@ useEffect(() => {
 }
 
 export default Dashboard;
-
-
-
-
