@@ -173,7 +173,7 @@ const updateItem = async (req, res) => {
     return res.status(400).json({ message: 'Item ID is required' });
   }
 
-  if (!name || !price || !category || !image || !veg) {
+  if (!name || !price || !category || !image || veg == undefined) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
