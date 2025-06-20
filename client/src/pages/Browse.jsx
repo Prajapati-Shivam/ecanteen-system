@@ -1,5 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Typography, Snackbar, Alert, Box, Pagination } from '@mui/material';
+import {
+  Typography,
+  Snackbar,
+  Alert,
+  Box,
+  Pagination,
+  CircularProgress,
+} from '@mui/material';
 import axios from 'axios';
 import { useUser } from '@clerk/clerk-react';
 import FoodCard from '../components/Food/FoodCard';
@@ -9,6 +16,7 @@ export default function Browse() {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [quantities, setQuantities] = useState({});
+  const [loading, setLoading] = useState(true); // 👈 loading state
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: '',
@@ -16,9 +24,12 @@ export default function Browse() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6;
+
   const url = import.meta.env.VITE_API_URL || window.location.origin;
+
   useEffect(() => {
     const fetchItems = async () => {
+      setLoading(true); // 👈 start loading
       try {
         const response = await axios.post(
           `${url}/api/auth/browseOrder`,
@@ -42,6 +53,8 @@ export default function Browse() {
           message: 'Failed to fetch food items.',
           severity: 'error',
         });
+      } finally {
+        setLoading(false); // 👈 end loading
       }
     };
 
@@ -112,68 +125,83 @@ export default function Browse() {
         />
       </Box>
 
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: 'repeat(2, 1fr)',
-            md: 'repeat(3, 1fr)',
-          },
-          gap: 3,
-          px: { xs: 1, sm: 0 },
-        }}
-      >
-        {currentItems.length === 0 ? (
-          <Typography
-            variant='body1'
-            align='center'
-            sx={{ color: 'text.secondary', gridColumn: '1 / -1' }}
-          >
-            No food items found.
-          </Typography>
-        ) : (
-          currentItems.map((item, index) => (
-            <FoodCard
-              key={item._id || `${item.name}-${index}`}
-              item={item}
-              quantity={quantities[item._id] || 1}
-              onQuantityChange={handleQuantityChange}
-              onAddToCart={handleAddToCart}
-            />
-          ))
-        )}
-      </Box>
-
-      {totalPages > 1 && (
-        <Box display='flex' justifyContent='center' mt={4}>
-          <Pagination
-            count={totalPages}
-            page={currentPage}
-            onChange={(e, page) => setCurrentPage(page)}
-            shape='rounded'
-            sx={{
-              '& .MuiPaginationItem-root': {
-                color: 'white',
-                border: '1px solid white',
-                backgroundColor: 'transparent',
-                transition: 'all 0.2s ease-in-out',
-              },
-              '& .MuiPaginationItem-root:hover': {
-                backgroundColor: 'white',
-                color: 'black',
-              },
-              '& .MuiPaginationItem-root.Mui-selected': {
-                backgroundColor: 'white',
-                color: 'black',
-                border: '1px solid white',
-              },
-              '& .MuiPaginationItem-ellipsis': {
-                color: 'white',
-              },
-            }}
-          />
+      {loading ? (
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            minHeight: '50vh',
+          }}
+        >
+          <CircularProgress size={60} thickness={5} color='success' />
         </Box>
+      ) : (
+        <>
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+              },
+              gap: 3,
+              px: { xs: 1, sm: 0 },
+            }}
+          >
+            {currentItems.length === 0 ? (
+              <Typography
+                variant='body1'
+                align='center'
+                sx={{ color: 'text.secondary', gridColumn: '1 / -1' }}
+              >
+                No food items found.
+              </Typography>
+            ) : (
+              currentItems.map((item, index) => (
+                <FoodCard
+                  key={item._id || `${item.name}-${index}`}
+                  item={item}
+                  quantity={quantities[item._id] || 1}
+                  onQuantityChange={handleQuantityChange}
+                  onAddToCart={handleAddToCart}
+                />
+              ))
+            )}
+          </Box>
+
+          {totalPages > 1 && (
+            <Box display='flex' justifyContent='center' mt={4}>
+              <Pagination
+                count={totalPages}
+                page={currentPage}
+                onChange={(e, page) => setCurrentPage(page)}
+                shape='rounded'
+                sx={{
+                  '& .MuiPaginationItem-root': {
+                    color: 'white',
+                    border: '1px solid white',
+                    backgroundColor: 'transparent',
+                    transition: 'all 0.2s ease-in-out',
+                  },
+                  '& .MuiPaginationItem-root:hover': {
+                    backgroundColor: 'white',
+                    color: 'black',
+                  },
+                  '& .MuiPaginationItem-root.Mui-selected': {
+                    backgroundColor: 'white',
+                    color: 'black',
+                    border: '1px solid white',
+                  },
+                  '& .MuiPaginationItem-ellipsis': {
+                    color: 'white',
+                  },
+                }}
+              />
+            </Box>
+          )}
+        </>
       )}
 
       <Snackbar
