@@ -17,7 +17,9 @@ import { useMemo, useState } from 'react';
 import placeholderImg from '../../assets/placeholder-food.jpg';
 
 const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
-  const url = import.meta.env.VITE_API_URL || window.location.origin;
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   const [editableFood, setEditableFood] = useState({ ...food });
 
   const [snackbar, setSnackbar] = useState({

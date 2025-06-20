@@ -1,40 +1,48 @@
 // Load environment variables from .env file
 require('dotenv').config();
-const pathModule = require('path');
 
 const express = require('express');
-const app = express();
 const cors = require('cors');
-
 const apiRoutes = require('./api'); // API routes
+const connectDB = require('./utils/db'); // MongoDB connection
 
-const connectDB = require('./utils/db'); // MongoDB connection function
+const app = express();
 connectDB(); // Connect to MongoDB
 
-if (process.env.NODE_ENV !== 'production') {
-  app.use(
-    cors({
-      origin: 'http://localhost:5173',
-      credentials: true,
-    })
-  );
-}
-// Middleware to parse incoming JSON and enable CORS
+// Define allowed origins
+const allowedOrigins = [
+  'http://localhost:5173', // Dev
+  'https://ecanteen-system.vercel.app', // Vercel frontend
+];
+
+// CORS middleware
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (e.g., curl or Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })
+);
+
+// Parse JSON bodies
 app.use(express.json());
 
-// Basic route to test server
+// Optional: Basic health check route
 app.get('/test', (req, res) => {
   res.send('Server Running');
 });
 
-app.use('/api', apiRoutes); // Use API routes
-
-app.use(express.static(pathModule.join(__dirname, '../client/dist')));
-app.get('/*w', (req, res) => {
-  res.sendFile(pathModule.resolve(__dirname, '../client/dist/index.html'));
-});
+// Use API routes
+app.use('/api', apiRoutes);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log('Server up and running...');
+  console.log(`Server running on port ${PORT}`);
 });

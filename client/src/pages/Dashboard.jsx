@@ -13,10 +13,12 @@ import {
   InputLabel,
   CircularProgress,
   Button,
-} from "@mui/material";
-import axios from "axios";
-import { useEffect, useState } from "react";
-import dayjs from "dayjs";
+
+} from '@mui/material';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
+
 import {
   BarChart,
   Bar,
@@ -25,20 +27,24 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import DownloadIcon from "@mui/icons-material/Download";
+
+import DownloadIcon from '@mui/icons-material/Download';
 
 function Dashboard() {
   const { user } = useUser();
   const { signOut } = useAuth();
-  const [filterType, setFilterType] = useState("weekdays");
+  const [filterType, setFilterType] = useState('weekdays');
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: "",
-    severity: "success",
+    message: '',
+    severity: 'success',
+
   });
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const url = import.meta.env.VITE_API_URL || window.location.origin;
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
@@ -64,14 +70,18 @@ function Dashboard() {
   }, []);
 
   const handleDelete = async () => {
-    if (!window.confirm("Are you sure you want to delete your account?"))
+
+    if (!window.confirm('Are you sure you want to delete your account?'))
+
       return;
 
     try {
       const { data } = await axios.delete(`${url}/api/auth/deleteAccount`, {
         withCredentials: true,
       });
-      if (data.status === "deleted") {
+
+      if (data.status === 'deleted') {
+
         await signOut();
         showSnackbar("Account deleted successfully!", "success");
       }
@@ -138,7 +148,6 @@ function Dashboard() {
 });
 
 
-
   const itemFrequencyByFilter = {};
   filteredOrders.forEach((order) => {
     order.items?.forEach((item) => {
@@ -159,10 +168,10 @@ function Dashboard() {
     return (
       <Box
         sx={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <CircularProgress size={60} thickness={5} />
@@ -186,29 +195,29 @@ function Dashboard() {
           >
             Dashboard
           </Typography>
-          <div className="flex items-center gap-x-6">
+          <div className='flex items-center gap-x-6'>
             <Button
-              onClick={() => console.log("downloaded")}
-              variant="contained"
-              className="bg-gradient-to-tr from-green-400 to-blue-500"
+              onClick={console.log('downloaded')}
+              variant='contained'
+              className='bg-gradient-to-tr from-green-400 to-blue-500'
               startIcon={<DownloadIcon />}
             >
               Export Orders
             </Button>
 
-            <Typography align="right" fontWeight="bold">
+            <Typography align='right' fontWeight='bold'>
               Role: {user?.publicMetadata?.role.toUpperCase()}
               <br />
               College ID: {user?.publicMetadata?.college_id}
             </Typography>
-
             <DeleteIcon
-              fontSize="medium"
-              className="text-red-400 cursor-pointer"
+              fontSize='medium'
+              className='text-red-400 cursor-pointer'
               onClick={handleDelete}
             />
           </div>
         </div>
+
 
         <Box className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
           <Paper className="p-6">
@@ -316,7 +325,6 @@ function Dashboard() {
     </ResponsiveContainer>
   )}
 </Paper>
-
         </Box>
       </Container>
 
@@ -330,11 +338,11 @@ function Dashboard() {
           severity={snackbar.severity}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           sx={{
-            fontSize: "1rem",
-            width: "100%",
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: "4px",
+            fontSize: '1rem',
+            width: '100%',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '4px',
           }}
         >
           {snackbar.message}
