@@ -45,7 +45,7 @@ const Navbar = () => {
     } else if (isStudent) {
       activeLinks = [...publicLinks, ...studentLinks];
     } else {
-      activeLinks = [...publicLinks, { name: 'Profile', path: '/user-form' }];
+      activeLinks = [...publicLinks];
     }
   }
 
@@ -142,11 +142,7 @@ const Navbar = () => {
                         fallbackRedirectUrl='/user-form'
                         signUpForceRedirectUrl='/user-form'
                       >
-                        <Button
-                          fullWidth
-                          variant='contained'
-                          className='bg-gradient-to-tr from-green-400 to-blue-500 text-black'
-                        >
+                        <Button fullWidth variant='contained' className='bg-gradient-to-tr from-green-400 to-blue-500 text-black'>
                           Login
                         </Button>
                       </SignInButton>

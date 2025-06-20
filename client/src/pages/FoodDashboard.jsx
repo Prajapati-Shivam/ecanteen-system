@@ -36,9 +36,7 @@ function FoodDashboard() {
   };
 
   const handleTabChange = (event, newValue) => setTab(newValue);
-  const url = import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : 'http://localhost:3001';
+
   const handleAddFood = async () => {
     const { name, price, category, veg, image } = foodForm;
 
@@ -53,7 +51,7 @@ function FoodDashboard() {
 
         setIsSubmitting(true);
         const res = await axios.post(
-          `${url}/api/admin/addItem`,
+          `${import.meta.env.VITE_API_URL}/api/admin/addItem`,
           formData,
           {
             withCredentials: true, // Ensures cookies are sent
@@ -86,6 +84,7 @@ function FoodDashboard() {
     setIsSubmitting(false);
   };
 
+  const url = import.meta.env.VITE_API_URL || window.location.origin;
   const fetchItems = async () => {
     try {
       const res = await axios.get(`${url}/api/admin/fetchItems`, {
