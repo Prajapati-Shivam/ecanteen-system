@@ -39,7 +39,7 @@ function FoodDashboard() {
 
   const handleAddFood = async () => {
     const { name, price, category, veg, image } = foodForm;
-
+    const url = import.meta.env.VITE_API_URL || window.location.origin;
     if (name && price && category && image && veg !== undefined) {
       try {
         const formData = new FormData();
@@ -51,7 +51,7 @@ function FoodDashboard() {
 
         setIsSubmitting(true);
         const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/admin/addItem`,
+          `${url}/api/admin/addItem`,
           formData,
           {
             withCredentials: true, // Ensures cookies are sent
