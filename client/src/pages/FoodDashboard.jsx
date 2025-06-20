@@ -84,7 +84,9 @@ function FoodDashboard() {
     setIsSubmitting(false);
   };
 
-  const url = import.meta.env.VITE_API_URL || window.location.origin;
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   const fetchItems = async () => {
     try {
       const res = await axios.get(`${url}/api/admin/fetchItems`, {

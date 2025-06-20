@@ -89,7 +89,9 @@ export default function Cart() {
 
   const totalPrice = cartItems.reduce((s, it) => s + it.price * it.quantity, 0);
 
-  const url = import.meta.env.VITE_API_URL || window.location.origin;
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
 
   async function getsessionId() {
     const gmailAccount = user?.primaryEmailAddress?.emailAddress;

@@ -36,7 +36,9 @@ function UserForm() {
     setSnackbarSeverity(severity);
     setOpenSnackbar(true);
   };
-  const url = import.meta.env.VITE_API_URL || window.location.origin;
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
   useEffect(() => {
     if (user && isSignedIn) {
       (async () => {
