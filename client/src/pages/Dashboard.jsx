@@ -82,32 +82,62 @@ function Dashboard() {
   };
 
   // ✅ FIXED: Use .locale('en')e('en')() to handle IST time filtering
+  // const filteredOrders = orders.filter((order) => {
+  //   if (!order.createdAt) return false;
+
+  //   const date = dayjs(order.createdAt).locale("en"); // convert to IST
+  //   const today = dayjs();
+
+  //   switch (filterType) {
+  //     case "weekdays":
+  //       return ![0, 6].includes(date.day());
+  //     case "weekends":
+  //       return [0, 6].includes(date.day());
+  //     case "day":
+  //       return date.isSame(today, "day");
+  //     case "month":
+  //       return date.isSame(today, "month");
+  //     case "year":
+  //       return date.isSame(today, "year");
+  //     case "all":
+  //     default:
+  //       return true;
+  //   }
+  // });
+
+
   const filteredOrders = orders.filter((order) => {
-    if (!order.createdAt) return false;
+  if (!order.orderTime) return false;
 
-    const date = dayjs(order.createdAt).locale("en"); // convert to IST
-    const today = dayjs();
+  const date = dayjs(order.orderTime).add(5.5, "hour");
+  const today = dayjs();
 
-    switch (filterType) {
-      case "weekdays":
-        return ![0, 6].includes(date.day());
-      case "weekends":
-        return [0, 6].includes(date.day());
-      case "day":
-        return date.isSame(today, "day");
-      case "month":
-        return date.isSame(today, "month");
-      case "year":
-        return date.isSame(today, "year");
-      case "all":
-      default:
-        return true;
-    }
-  });
+  switch (filterType) {
+    case "weekdays":
+      return ![0, 6].includes(date.day()); // Mon–Fri
+    case "weekends":
+      return [0, 6].includes(date.day()); // Sat/Sun
+    case "day":
+      return date.format("YYYY-MM-DD") === today.format("YYYY-MM-DD");
+    case "month":
+      return date.month() === today.month() && date.year() === today.year();
+    case "year":
+      return date.year() === today.year();
+    case "all":
+    default:
+      return true;
+  }
+});
 
-  const ordersToday = orders.filter((order) =>
-    dayjs(order.createdAt).locale("en").isSame(dayjs(), "day")
-  );
+ const ordersToday = orders.filter((order) => {
+  const created = dayjs(order.orderTime).add(5.5, "hour"); // Convert UTC to IST
+  const today = dayjs().startOf("day");
+  const tomorrow = dayjs().add(1, "day").startOf("day");
+
+  return created.isAfter(today) && created.isBefore(tomorrow);
+});
+
+
 
   const itemFrequencyByFilter = {};
   filteredOrders.forEach((order) => {
@@ -263,19 +293,30 @@ function Dashboard() {
           </Box>
 
           <Paper className="p-6 md:col-span-2">
-            <Typography variant="h6">
-              Top Items (
-              {filterType.charAt(0).toUpperCase() + filterType.slice(1)})
-            </Typography>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={filteredChartData}>
-                <XAxis dataKey="name" />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="count" fill="#8884d8" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Paper>
+  <Typography variant="h6" sx={{ mb: 2 }}>
+    Top Items ({filterType.charAt(0).toUpperCase() + filterType.slice(1)})
+  </Typography>
+
+  {filteredChartData.length === 0 ? (
+    <Typography
+      variant="body1"
+      align="center"
+      sx={{ color: "#888", fontStyle: "italic", mt: 4 }}
+    >
+      No data available for this filter.
+    </Typography>
+  ) : (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={filteredChartData}>
+        <XAxis dataKey="name" />
+        <YAxis allowDecimals={false} />
+        <Tooltip />
+        <Bar dataKey="count" fill="#8884d8" />
+      </BarChart>
+    </ResponsiveContainer>
+  )}
+</Paper>
+
         </Box>
       </Container>
 
