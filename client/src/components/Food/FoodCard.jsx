@@ -1,4 +1,4 @@
-import {
+ import {
   TextField,
   Typography,
   Button,
@@ -18,6 +18,7 @@ import {
   ShoppingCart as ShoppingCartIcon,
 } from '@mui/icons-material';
 import placeholderImg from '../../assets/placeholder-food.jpg';
+
 const getCategoryIcon = (category) => {
   switch (category.toLowerCase()) {
     case 'breakfast':
@@ -37,6 +38,8 @@ export default function FoodCard({
   onQuantityChange,
   onAddToCart,
 }) {
+  const isAvailable = item.availability;
+
   return (
     <Card
       sx={{
@@ -58,6 +61,7 @@ export default function FoodCard({
           borderTopLeftRadius: 12,
           borderTopRightRadius: 12,
           objectFit: 'cover',
+          filter: !isAvailable ? 'grayscale(100%)' : 'none',
         }}
       />
 
@@ -140,23 +144,40 @@ export default function FoodCard({
             sx={{ width: 80 }}
             value={quantity}
             onChange={(e) => onQuantityChange(item._id, e.target.value)}
+            disabled={!isAvailable}
           />
 
-          <Button
-            variant='contained'
-            size='medium'
-            onClick={() => onAddToCart(item)}
-            sx={{
-              backgroundColor: 'success.main',
-              flexGrow: 1,
-              fontWeight: '700',
-              fontSize: { xs: '0.9rem', sm: '1rem' },
-              '&:hover': { backgroundColor: 'success.dark' },
-            }}
-            startIcon={<ShoppingCartIcon />}
-          >
-            Add to Cart
-          </Button>
+          {isAvailable ? (
+            <Button
+              variant='contained'
+              size='medium'
+              onClick={() => onAddToCart(item)}
+              sx={{
+                backgroundColor: 'success.main',
+                flexGrow: 1,
+                fontWeight: '700',
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                '&:hover': {
+                  backgroundColor: 'success.dark',
+                },
+              }}
+              startIcon={<ShoppingCartIcon />}
+            >
+              Add to Cart
+            </Button>
+          ) : (
+            <Typography
+              sx={{
+                color: '#ef4444',
+                fontWeight: 'bold',
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                flexGrow: 1,
+                textAlign: 'center',
+              }}
+            >
+              Out of Stock
+            </Typography>
+          )}
         </Box>
       </CardContent>
     </Card>

@@ -1,5 +1,5 @@
-import { useAuth, useUser } from '@clerk/clerk-react';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { useAuth, useUser } from "@clerk/clerk-react";
+import DeleteIcon from "@mui/icons-material/Delete";
 import {
   Box,
   Container,
@@ -13,10 +13,12 @@ import {
   InputLabel,
   CircularProgress,
   Button,
+
 } from '@mui/material';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
+
 import {
   BarChart,
   Bar,
@@ -24,7 +26,7 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
 
 import DownloadIcon from '@mui/icons-material/Download';
 
@@ -36,6 +38,7 @@ function Dashboard() {
     open: false,
     message: '',
     severity: 'success',
+
   });
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -43,7 +46,7 @@ function Dashboard() {
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
 
-  const showSnackbar = (message, severity = 'success') => {
+  const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -53,11 +56,11 @@ function Dashboard() {
         const { data } = await axios.get(`${url}/api/admin/fetchAllOrder`, {
           withCredentials: true,
         });
-        if (data.status === 'success') {
+        if (data.status === "success") {
           setOrders(data.orders);
         }
       } catch (err) {
-        console.error('Failed to fetch orders:', err);
+        console.error("Failed to fetch orders:", err);
       } finally {
         setLoading(false);
       }
@@ -67,47 +70,83 @@ function Dashboard() {
   }, []);
 
   const handleDelete = async () => {
+
     if (!window.confirm('Are you sure you want to delete your account?'))
+
       return;
 
     try {
       const { data } = await axios.delete(`${url}/api/auth/deleteAccount`, {
         withCredentials: true,
       });
+
       if (data.status === 'deleted') {
+
         await signOut();
-        showSnackbar('Account deleted successfully!', 'success');
+        showSnackbar("Account deleted successfully!", "success");
       }
     } catch (error) {
-      console.error('Error deleting account:', error);
-      showSnackbar('Failed to delete account. Please try again.', 'error');
+      console.error("Error deleting account:", error);
+      showSnackbar("Failed to delete account. Please try again.", "error");
     }
   };
 
+  // ✅ FIXED: Use .locale('en')e('en')() to handle IST time filtering
+  // const filteredOrders = orders.filter((order) => {
+  //   if (!order.createdAt) return false;
+
+  //   const date = dayjs(order.createdAt).locale("en"); // convert to IST
+  //   const today = dayjs();
+
+  //   switch (filterType) {
+  //     case "weekdays":
+  //       return ![0, 6].includes(date.day());
+  //     case "weekends":
+  //       return [0, 6].includes(date.day());
+  //     case "day":
+  //       return date.isSame(today, "day");
+  //     case "month":
+  //       return date.isSame(today, "month");
+  //     case "year":
+  //       return date.isSame(today, "year");
+  //     case "all":
+  //     default:
+  //       return true;
+  //   }
+  // });
+
+
   const filteredOrders = orders.filter((order) => {
-    const date = dayjs(order.createdAt);
-    const today = dayjs();
+  if (!order.orderTime) return false;
 
-    switch (filterType) {
-      case 'weekdays':
-        return ![0, 6].includes(date.day());
-      case 'weekends':
-        return [0, 6].includes(date.day());
-      case 'day':
-        return date.isSame(today, 'day');
-      case 'month':
-        return date.isSame(today, 'month');
-      case 'year':
-        return date.isSame(today, 'year');
-      case 'all':
-      default:
-        return true;
-    }
-  });
+  const date = dayjs(order.orderTime).add(5.5, "hour");
+  const today = dayjs();
 
-  const ordersToday = orders.filter((order) =>
-    dayjs(order.createdAt).isSame(dayjs(), 'day')
-  );
+  switch (filterType) {
+    case "weekdays":
+      return ![0, 6].includes(date.day()); // Mon–Fri
+    case "weekends":
+      return [0, 6].includes(date.day()); // Sat/Sun
+    case "day":
+      return date.format("YYYY-MM-DD") === today.format("YYYY-MM-DD");
+    case "month":
+      return date.month() === today.month() && date.year() === today.year();
+    case "year":
+      return date.year() === today.year();
+    case "all":
+    default:
+      return true;
+  }
+});
+
+ const ordersToday = orders.filter((order) => {
+  const created = dayjs(order.orderTime).add(5.5, "hour"); // Convert UTC to IST
+  const today = dayjs().startOf("day");
+  const tomorrow = dayjs().add(1, "day").startOf("day");
+
+  return created.isAfter(today) && created.isBefore(tomorrow);
+});
+
 
   const itemFrequencyByFilter = {};
   filteredOrders.forEach((order) => {
@@ -141,17 +180,17 @@ function Dashboard() {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', px: 2, pb: 4 }}>
-      <Container maxWidth='lg'>
-        <div className='flex flex-col sm:flex-row justify-between items-center'>
+    <Box sx={{ minHeight: "100vh", px: 2, pb: 4 }}>
+      <Container maxWidth="lg">
+        <div className="flex flex-col sm:flex-row justify-between items-center">
           <Typography
-            variant='h4'
+            variant="h4"
             sx={{
-              fontWeight: 'bold',
-              fontSize: { xs: '2rem', md: '3rem' },
-              background: 'linear-gradient(to right, #22c55e, #3b82f6)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              fontWeight: "bold",
+              fontSize: { xs: "2rem", md: "3rem" },
+              background: "linear-gradient(to right, #22c55e, #3b82f6)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
             }}
           >
             Dashboard
@@ -171,7 +210,6 @@ function Dashboard() {
               <br />
               College ID: {user?.publicMetadata?.college_id}
             </Typography>
-
             <DeleteIcon
               fontSize='medium'
               className='text-red-400 cursor-pointer'
@@ -180,102 +218,113 @@ function Dashboard() {
           </div>
         </div>
 
-        <Box className='mt-10 grid grid-cols-1 md:grid-cols-2 gap-6'>
-          <Paper className='p-6'>
-            <Typography variant='h6'>Orders Today</Typography>
-            <Typography variant='h4'>{ordersToday.length}</Typography>
+
+        <Box className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Paper className="p-6">
+            <Typography variant="h6">Orders Today</Typography>
+            <Typography variant="h4">{ordersToday.length}</Typography>
           </Paper>
 
-          <Paper className='p-6'>
-            <Typography variant='h6'>Total Orders</Typography>
-            <Typography variant='h4'>{orders.length}</Typography>
+          <Paper className="p-6">
+            <Typography variant="h6">Total Orders</Typography>
+            <Typography variant="h4">{orders.length}</Typography>
           </Paper>
 
           <Box sx={{ px: 2, mt: 2 }}>
             <FormControl
               fullWidth
-              variant='outlined'
+              variant="outlined"
               sx={{
                 mt: 1,
                 maxWidth: 300,
-                '& .MuiOutlinedInput-root': {
-                  backgroundColor: '#030712', // Black input box
-                  color: 'white', // Gray input text
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "#030712",
+                  color: "white",
                   borderRadius: 2,
-                  '& fieldset': {
-                    borderColor: '#555',
+                  "& fieldset": {
+                    borderColor: "#555",
                   },
-                  '&:hover fieldset': {
-                    borderColor: '#22c55e',
+                  "&:hover fieldset": {
+                    borderColor: "#22c55e",
                   },
-                  '&.Mui-focused fieldset': {
-                    borderColor: '#3b82f6',
-                  },
-                },
-                '& .MuiInputLabel-root': {
-                  color: '#ffffff', // White label (on black background)
-                  '&.Mui-focused': {
-                    color: '#3b82f6',
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#3b82f6",
                   },
                 },
-                '& .MuiSvgIcon-root': {
-                  color: '#000000', // Dropdown arrow matches input text
+                "& .MuiInputLabel-root": {
+                  color: "#ffffff",
+                  "&.Mui-focused": {
+                    color: "#3b82f6",
+                  },
+                },
+                "& .MuiSvgIcon-root": {
+                  color: "#000000",
                 },
               }}
             >
-              <InputLabel id='filter-label'>Filter By</InputLabel>
+              <InputLabel id="filter-label">Filter By</InputLabel>
               <Select
-                labelId='filter-label'
+                labelId="filter-label"
                 value={filterType}
-                label='Filter By'
+                label="Filter By"
                 onChange={(e) => setFilterType(e.target.value)}
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      backgroundColor: '#ffffff', // White dropdown
-                      color: '#000000', // Black text
+                      backgroundColor: "#ffffff",
+                      color: "#000000",
                       mt: 1,
-                      '& .MuiMenuItem-root': {
+                      "& .MuiMenuItem-root": {
                         fontWeight: 500,
-                        color: '#000000',
+                        color: "#000000",
                       },
-                      '& .MuiMenuItem-root:hover': {
-                        backgroundColor: '#f0f0f0',
+                      "& .MuiMenuItem-root:hover": {
+                        backgroundColor: "#f0f0f0",
                       },
-                      '& .Mui-selected': {
-                        backgroundColor: '#e0e0e0',
-                        '&:hover': {
-                          backgroundColor: '#d4d4d4',
+                      "& .Mui-selected": {
+                        backgroundColor: "#e0e0e0",
+                        "&:hover": {
+                          backgroundColor: "#d4d4d4",
                         },
                       },
                     },
                   },
                 }}
               >
-                <MenuItem value='weekdays'>Weekdays</MenuItem>
-                <MenuItem value='weekends'>Weekends</MenuItem>
-                <MenuItem value='day'>Today</MenuItem>
-                <MenuItem value='month'>This Month</MenuItem>
-                <MenuItem value='year'>This Year</MenuItem>
-                <MenuItem value='all'>All Time</MenuItem>
+                <MenuItem value="weekdays">Weekdays</MenuItem>
+                <MenuItem value="weekends">Weekends</MenuItem>
+                <MenuItem value="day">Today</MenuItem>
+                <MenuItem value="month">This Month</MenuItem>
+                <MenuItem value="year">This Year</MenuItem>
+                <MenuItem value="all">All Time</MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          <Paper className='p-6 md:col-span-2'>
-            <Typography variant='h6'>
-              Top Items (
-              {filterType.charAt(0).toUpperCase() + filterType.slice(1)})
-            </Typography>
-            <ResponsiveContainer width='100%' height={300}>
-              <BarChart data={filteredChartData}>
-                <XAxis dataKey='name' />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey='count' fill='#8884d8' />
-              </BarChart>
-            </ResponsiveContainer>
-          </Paper>
+          <Paper className="p-6 md:col-span-2">
+  <Typography variant="h6" sx={{ mb: 2 }}>
+    Top Items ({filterType.charAt(0).toUpperCase() + filterType.slice(1)})
+  </Typography>
+
+  {filteredChartData.length === 0 ? (
+    <Typography
+      variant="body1"
+      align="center"
+      sx={{ color: "#888", fontStyle: "italic", mt: 4 }}
+    >
+      No data available for this filter.
+    </Typography>
+  ) : (
+    <ResponsiveContainer width="100%" height={300}>
+      <BarChart data={filteredChartData}>
+        <XAxis dataKey="name" />
+        <YAxis allowDecimals={false} />
+        <Tooltip />
+        <Bar dataKey="count" fill="#8884d8" />
+      </BarChart>
+    </ResponsiveContainer>
+  )}
+</Paper>
         </Box>
       </Container>
 
@@ -283,7 +332,7 @@ function Dashboard() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           severity={snackbar.severity}
