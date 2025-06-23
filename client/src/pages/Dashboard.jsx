@@ -53,8 +53,8 @@ function Dashboard() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const { data } = await axios.get(`${url}/api/admin/fetchAllOrder`, {
-          withCredentials: true,
+        const { data } = await axios.post(`${url}/api/admin/fetchAllOrder`, {
+          userId: user.id
         });
         if (data.status === "success") {
           setOrders(data.orders);
@@ -76,8 +76,8 @@ function Dashboard() {
       return;
 
     try {
-      const { data } = await axios.delete(`${url}/api/auth/deleteAccount`, {
-        withCredentials: true,
+      const { data } = await axios.post(`${url}/api/auth/deleteAccount`, {
+        userId: user.id
       });
 
       if (data.status === 'deleted') {

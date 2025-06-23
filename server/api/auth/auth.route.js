@@ -13,7 +13,6 @@ router.post("/displayOrder", authController.displayOrder);
 router.post("/browseOrder", authController.browseOrder);
 router.post("/payment", authController.payment);
 
-router.use(clerkMiddleware());
-router.delete("/deleteAccount", authController.deleteAccount);
+router.post("/deleteAccount", authController.deleteAccount);
 
 module.exports = router;

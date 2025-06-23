@@ -40,8 +40,7 @@ function OrderRow({ order, onStatusUpdate }) {
         {
           id: order._id,
           orderStatus: newStatus,
-        },
-        { withCredentials: true }
+        }
       );
       onStatusUpdate(order._id, newStatus);
     } catch (err) {
@@ -135,9 +134,9 @@ export default function OrderPending() {
       if (!user) return;
 
       try {
-        const response = await axios.get(`${url}/api/admin/fetchActiveOrder`, {
-          withCredentials: true,
-        });
+        const response = await axios.post(`${url}/api/admin/fetchActiveOrder`, 
+          { userId: user.id }
+        );
 
         // sort orders by order time in descending order
         const sortedOrders = [...response.data.orders].sort(

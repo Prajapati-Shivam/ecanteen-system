@@ -2,13 +2,12 @@ const { Item, Order } = require('../../models');
 const cloudinary = require('../../utils/cloudinary');
 const streamifier = require('streamifier'); // <== required for buffer upload
 
-const { getAuth } = require('@clerk/express');
+
 const { users } = require('@clerk/clerk-sdk-node');
 
 const addItem = async (req, res) => {
-  const { name, price, category, veg } = req.body;
+  const { userId, name, price, category, veg } = req.body;
 
-  const { userId } = getAuth(req);
   const user = await users.getUser(userId);
   const college_id = user?.publicMetadata?.college_id;
 
@@ -65,8 +64,7 @@ const fetchItems = async (req, res) => {
   let { college_id } = req.query;
 
   if (college_id === undefined) {
-    const { userId } = getAuth(req);
-    const user = await users.getUser(userId);
+    const user = await users.getUser(req.body.userId);
     college_id = user?.publicMetadata?.college_id;
   }
 
@@ -173,7 +171,7 @@ const updateItem = async (req, res) => {
     return res.status(400).json({ message: 'Item ID is required' });
   }
 
-  if (!name || !price || !category || !image || !veg) {
+  if (!name || !price || !category || !image || veg == undefined) {
     return res.status(400).json({ message: 'All fields are required' });
   }
 
@@ -203,7 +201,7 @@ const updateItem = async (req, res) => {
 };
 
 const fetchOrders = async (req, res, filterType) => {
-  const { userId } = getAuth(req);
+  const { userId } = req.body;
   if (!userId)
     return res.status(400).json({ messgae: 'Login First' });
 

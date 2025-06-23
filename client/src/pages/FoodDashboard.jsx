@@ -14,7 +14,10 @@ import {
 import AddFoodForm from '../components/Food/AddFoodForm';
 import ViewFoodItems from '../components/Food/ViewFoodItems';
 
+import { useUser } from "@clerk/clerk-react";
+
 function FoodDashboard() {
+  const { user } = useUser();
   const [tab, setTab] = useState('create');
   const [foodForm, setFoodForm] = useState({
     name: '',
@@ -43,6 +46,8 @@ function FoodDashboard() {
     if (name && price && category && image && veg !== undefined) {
       try {
         const formData = new FormData();
+        // console.log(user);
+        formData.append('userId', user.id);
         formData.append('name', name);
         formData.append('price', price);
         formData.append('category', category);
@@ -52,11 +57,7 @@ function FoodDashboard() {
         setIsSubmitting(true);
         const res = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/admin/addItem`,
-          formData,
-          {
-            withCredentials: true, // Ensures cookies are sent
-          }
-          // ❌ Do not set headers — let Axios set the correct Content-Type
+          formData
         );
 
         showSnackbar('Food item added successfully!', 'success');
@@ -89,8 +90,8 @@ function FoodDashboard() {
     : 'http://localhost:3001';
   const fetchItems = async () => {
     try {
-      const res = await axios.get(`${url}/api/admin/fetchItems`, {
-        withCredentials: true,
+      const res = await axios.post(`${url}/api/admin/fetchItems`, {
+        userId: user.id
       });
       const items = res.data.items || [];
       const transformed = items.map(({ _id, ...rest }) => ({

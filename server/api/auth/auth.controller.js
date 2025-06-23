@@ -237,7 +237,7 @@ const browseOrder = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
-  const { userId } = getAuth(req);
+  const { userId } = req.body;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
   const user = await users.getUser(userId);
@@ -249,7 +249,10 @@ const deleteAccount = async (req, res) => {
 
   try {
     await clerkClient.users.deleteUser(userId); //Delete the user data from clerk
-    await User.deleteOne({ email: user_email }); //Delete the user data from DB
+    if(user.publicMetadata.role == 'admin')
+      await Admin.deleteOne({ email: user_email }); //Delete the user data from DB
+    else
+      await User.deleteOne({ email: user_email }); //Delete the user data from DB
 
     return res
       .status(200)
