@@ -14,7 +14,7 @@ import {
 import AddFoodForm from '../components/Food/AddFoodForm';
 import ViewFoodItems from '../components/Food/ViewFoodItems';
 
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from '@clerk/clerk-react';
 
 function FoodDashboard() {
   const { user } = useUser();
@@ -34,6 +34,11 @@ function FoodDashboard() {
     message: '',
     severity: 'success', // 'error', 'info', 'warning'
   });
+
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : 'http://localhost:3001';
+
   const showSnackbar = (message, severity = 'success') => {
     setSnackbar({ open: true, message, severity });
   };
@@ -55,10 +60,7 @@ function FoodDashboard() {
         formData.append('image', image); // ✅ actual File object
 
         setIsSubmitting(true);
-        const res = await axios.post(
-          `${import.meta.env.VITE_API_URL}/api/admin/addItem`,
-          formData
-        );
+        const res = await axios.post(`${url}/api/admin/addItem`, formData);
 
         showSnackbar('Food item added successfully!', 'success');
         setFoodItems([
@@ -85,13 +87,10 @@ function FoodDashboard() {
     setIsSubmitting(false);
   };
 
-  const url = import.meta.env.PROD
-    ? import.meta.env.VITE_API_URL
-    : 'http://localhost:3001';
   const fetchItems = async () => {
     try {
       const res = await axios.post(`${url}/api/admin/fetchItems`, {
-        userId: user.id
+        userId: user.id,
       });
       const items = res.data.items || [];
       const transformed = items.map(({ _id, ...rest }) => ({
