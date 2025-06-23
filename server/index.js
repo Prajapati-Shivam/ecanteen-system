@@ -13,6 +13,7 @@ connectDB(); // Connect to MongoDB
 const allowedOrigins = [
   'http://localhost:5173', // Dev
   'https://ecanteen-system.vercel.app', // Vercel frontend
+  'https://mealmate-murex.vercel.app/',
 ];
 
 // CORS middleware
