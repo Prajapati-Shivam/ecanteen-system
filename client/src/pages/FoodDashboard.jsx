@@ -14,9 +14,6 @@ import {
 import AddFoodForm from "../components/Food/AddFoodForm";
 import ViewFoodItems from "../components/Food/ViewFoodItems";
 
-import AddFoodForm from "../components/Food/AddFoodForm";
-import ViewFoodItems from "../components/Food/ViewFoodItems";
-
 import { useUser } from "@clerk/clerk-react";
 
 function FoodDashboard() {
