@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Box,
   Container,
@@ -9,29 +9,40 @@ import {
   Tab,
   Snackbar,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 
-import AddFoodForm from '../components/Food/AddFoodForm';
-import ViewFoodItems from '../components/Food/ViewFoodItems';
+import AddFoodForm from "../components/Food/AddFoodForm";
+import ViewFoodItems from "../components/Food/ViewFoodItems";
+
+import AddFoodForm from "../components/Food/AddFoodForm";
+import ViewFoodItems from "../components/Food/ViewFoodItems";
+
+import { useUser } from "@clerk/clerk-react";
 
 function FoodDashboard() {
-  const [tab, setTab] = useState('create');
+  const { user } = useUser();
+  const [tab, setTab] = useState("create");
   const [foodForm, setFoodForm] = useState({
-    name: '',
-    image: '',
-    price: '',
+    name: "",
+    image: "",
+    price: "",
     veg: true,
-    category: '',
+    category: "",
   });
   const [foodItems, setFoodItems] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
-    message: '',
-    severity: 'success', // 'error', 'info', 'warning'
+    message: "",
+    severity: "success", // 'error', 'info', 'warning'
   });
-  const showSnackbar = (message, severity = 'success') => {
+
+  const url = import.meta.env.PROD
+    ? import.meta.env.VITE_API_URL
+    : "http://localhost:3001";
+
+  const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
   };
 
@@ -43,52 +54,46 @@ function FoodDashboard() {
     if (name && price && category && image && veg !== undefined) {
       try {
         const formData = new FormData();
-        formData.append('name', name);
-        formData.append('price', price);
-        formData.append('category', category);
-        formData.append('veg', veg);
-        formData.append('image', image); // ✅ actual File object
+        // console.log(user);
+        formData.append("userId", user.id);
+        formData.append("name", name);
+        formData.append("price", price);
+        formData.append("category", category);
+        formData.append("veg", veg);
+        formData.append("image", image); // ✅ actual File object
 
         setIsSubmitting(true);
-        const res = await axios.post(
-          `${url}/api/admin/addItem`,
-          formData,
-          {
-            withCredentials: true, // Ensures cookies are sent
-          }
-          // ❌ Do not set headers — let Axios set the correct Content-Type
-        );
+        const res = await axios.post(`${url}/api/admin/addItem`, formData);
 
-        showSnackbar('Food item added successfully!', 'success');
+        showSnackbar("Food item added successfully!", "success");
         setFoodItems([
           ...foodItems,
           { ...foodForm, id: res.data.item_id, availability: true },
         ]);
         setFoodForm({
-          name: '',
-          image: '',
-          price: '',
+          name: "",
+          image: "",
+          price: "",
           veg: true,
-          category: '',
+          category: "",
         });
       } catch (err) {
-        console.error('Error adding food item:', err);
+        console.error("Error adding food item:", err);
         showSnackbar(
-          'Failed to add food item. Please try again later.',
-          'error'
+          "Failed to add food item. Please try again later.",
+          "error"
         );
       }
     } else {
-      showSnackbar('Please fill all required fields!', 'error');
+      showSnackbar("Please fill all required fields!", "error");
     }
     setIsSubmitting(false);
   };
 
-  const url = import.meta.env.VITE_API_URL || window.location.origin;
   const fetchItems = async () => {
     try {
-      const res = await axios.get(`${url}/api/admin/fetchItems`, {
-        withCredentials: true,
+      const res = await axios.post(`${url}/api/admin/fetchItems`, {
+        userId: user.id,
       });
       const items = res.data.items || [];
       const transformed = items.map(({ _id, ...rest }) => ({
@@ -97,8 +102,8 @@ function FoodDashboard() {
       }));
       setFoodItems(transformed);
     } catch (err) {
-      console.error('Error fetching items:', err);
-      showSnackbar('Error fetching food items.', 'error');
+      console.error("Error fetching items:", err);
+      showSnackbar("Error fetching food items.", "error");
     }
   };
 
@@ -109,26 +114,26 @@ function FoodDashboard() {
 
   return (
     <Box
-      maxWidth='lg'
-      className='min-h-screen md:px-2 pb-4 flex flex-col mx-auto'
+      maxWidth="lg"
+      className="min-h-screen md:px-2 pb-4 flex flex-col mx-auto"
     >
-      <div className='flex flex-col sm:flex-row items-center justify-between p-4'>
-        <h3 className='text-2xl font-bold text-white'>Food Panel</h3>
+      <div className="flex flex-col sm:flex-row items-center justify-between p-4">
+        <h3 className="text-2xl font-bold text-white">Food Panel</h3>
         <Tabs
           value={tab}
           onChange={handleTabChange}
           centered
-          indicatorColor='primary'
-          textColor='inherit'
-          sx={{ '& .MuiTab-root': { color: 'white' } }}
+          indicatorColor="primary"
+          textColor="inherit"
+          sx={{ "& .MuiTab-root": { color: "white" } }}
         >
-          <Tab label='Add Food Item' value='create' />
-          <Tab label='View Food Items' value='view' />
+          <Tab label="Add Food Item" value="create" />
+          <Tab label="View Food Items" value="view" />
         </Tabs>
       </div>
-      <Container maxWidth='lg'>
-        <Paper elevation={6} sx={{ borderRadius: 3 }} className='p-2 sm:p-4'>
-          {tab === 'create' && (
+      <Container maxWidth="lg">
+        <Paper elevation={6} sx={{ borderRadius: 3 }} className="p-2 sm:p-4">
+          {tab === "create" && (
             <AddFoodForm
               foodForm={foodForm}
               setFoodForm={setFoodForm}
@@ -137,7 +142,7 @@ function FoodDashboard() {
             />
           )}
 
-          {tab === 'view' && (
+          {tab === "view" && (
             <ViewFoodItems
               foodItems={foodItems}
               setFoodItems={setFoodItems}
@@ -153,17 +158,17 @@ function FoodDashboard() {
         open={snackbar.open}
         autoHideDuration={3000}
         onClose={() => setSnackbar({ ...snackbar, open: false })}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert
           severity={snackbar.severity}
           onClose={() => setSnackbar({ ...snackbar, open: false })}
           sx={{
-            fontSize: '1rem',
-            width: '100%',
-            border: '1px solid',
-            borderColor: 'divider',
-            borderRadius: '4px',
+            fontSize: "1rem",
+            width: "100%",
+            border: "1px solid",
+            borderColor: "divider",
+            borderRadius: "4px",
           }}
         >
           {snackbar.message}
