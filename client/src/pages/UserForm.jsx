@@ -21,7 +21,7 @@ import adminImg from '../assets/user-form-admin.svg';
 import userImg from '../assets/user-form-user.svg';
 
 function UserForm() {
-  const { user, isSignedIn } = useUser();
+  const { user, isSignedIn, isLoaded } = useUser();
   const navigate = useNavigate();
 
   const [role, setRole] = useState();
@@ -40,6 +40,11 @@ function UserForm() {
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
   useEffect(() => {
+    // Signed-out visitors would otherwise see the loading spinner forever
+    if (isLoaded && !isSignedIn) {
+      navigate('/');
+      return;
+    }
     if (user && isSignedIn) {
       (async () => {
         try {
@@ -65,7 +70,7 @@ function UserForm() {
         }
       })();
     }
-  }, [user, isSignedIn, navigate, url]);
+  }, [user, isSignedIn, isLoaded, navigate, url]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

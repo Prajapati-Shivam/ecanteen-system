@@ -60,13 +60,11 @@ function FoodDashboard() {
         formData.append('image', image); // ✅ actual File object
 
         setIsSubmitting(true);
-        const res = await axios.post(`${url}/api/admin/addItem`, formData);
+        await axios.post(`${url}/api/admin/addItem`, formData);
 
         showSnackbar('Food item added successfully!', 'success');
-        setFoodItems([
-          ...foodItems,
-          { ...foodForm, id: res.data.item_id, availability: true },
-        ]);
+        // Reload from the server so the new item has its uploaded image URL
+        await fetchItems();
         setFoodForm({
           name: '',
           image: '',

@@ -57,7 +57,7 @@ export default function Orders() {
         (data.orders || []).forEach((order) => {
           const status = order.orderStatus || 'active';
           const dt = new Date(order.orderTime || Date.now());
-          const date = dt.toISOString().split('T')[0];
+          const date = dt.toLocaleDateString('en-CA'); // local YYYY-MM-DD, same timezone as `time`
           const time = dt.toLocaleTimeString('en-GB', {
             hour: '2-digit',
             minute: '2-digit',

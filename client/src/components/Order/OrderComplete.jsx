@@ -45,6 +45,7 @@ function OrderRow({ order, onStatusUpdate }) {
       onStatusUpdate(order._id, newStatus);
     } catch (err) {
       console.error('Failed to update status:', err);
+      setStatus(order.orderStatus); // revert the dropdown to the saved status
       alert('Failed to update order status');
     } finally {
       setLoading(false);
@@ -155,13 +156,7 @@ export default function OrderComplete() {
     setOrders((prev) =>
       prev.map((order) =>
         order._id === id
-          ? {
-              ...order,
-              items: order.items.map((item) => ({
-                ...item,
-                orderStatus: newStatus,
-              })),
-            }
+          ? { ...order, orderStatus: newStatus }
           : order
       )
     );
@@ -188,7 +183,7 @@ export default function OrderComplete() {
               <TableRow>
                 <TableCell colSpan={5} align='center'>
                   <Typography variant='body1' color='text.secondary'>
-                    No active orders found.
+                    No completed orders found.
                   </Typography>
                 </TableCell>
               </TableRow>

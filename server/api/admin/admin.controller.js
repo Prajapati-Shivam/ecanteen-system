@@ -8,9 +8,6 @@ const { users } = require('@clerk/clerk-sdk-node');
 const addItem = async (req, res) => {
   const { userId, name, price, category, veg } = req.body;
 
-  const user = await users.getUser(userId);
-  const college_id = user?.publicMetadata?.college_id;
-
   if (!name || !price || !category || veg === undefined || !req.file) {
     return res
       .status(400)
@@ -18,6 +15,9 @@ const addItem = async (req, res) => {
   }
 
   try {
+    const user = await users.getUser(userId);
+    const college_id = user?.publicMetadata?.college_id;
+
     // Upload buffer to Cloudinary using upload_stream
     const streamUpload = (buffer) => {
       return new Promise((resolve, reject) => {
@@ -64,8 +64,13 @@ const fetchItems = async (req, res) => {
   let { college_id } = req.query;
 
   if (college_id === undefined) {
-    const user = await users.getUser(req.body.userId);
-    college_id = user?.publicMetadata?.college_id;
+    try {
+      const user = await users.getUser(req.body.userId);
+      college_id = user?.publicMetadata?.college_id;
+    } catch (err) {
+      console.error('Error fetching user:', err);
+      return res.status(401).json({ message: 'Invalid user' });
+    }
   }
 
   const {
@@ -184,7 +189,11 @@ const updateItem = async (req, res) => {
     availability: availability,
   };
   try {
-    const updatedItem = await Item.findByIdAndUpdate(item_id, updatedData);
+    const updatedItem = await Item.findByIdAndUpdate(item_id, updatedData, {
+      new: true,
+      runValidators: true,
+      projection: { college_id: 0, __v: 0 },
+    });
     if (!updatedItem) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -203,23 +212,24 @@ const updateItem = async (req, res) => {
 const fetchOrders = async (req, res, filterType) => {
   const { userId } = req.body;
   if (!userId)
-    return res.status(400).json({ messgae: 'Login First' });
-
-  const user = await users.getUser(userId);
-  if (user?.publicMetadata?.role === 'student')
-    return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin' });
-
-  const college_id = user?.publicMetadata?.college_id;
-  // const college_id = 5583;
-
-  const filter = filterType === 'all' ? {
-    college_id
-  } : {
-    college_id,
-    orderStatus: filterType
-  }
+    return res.status(400).json({ message: 'Login First' });
 
   try {
+    const user = await users.getUser(userId);
+    // Users without a role/college would otherwise match every college's orders
+    if (user?.publicMetadata?.role !== 'admin' || !user?.publicMetadata?.college_id)
+      return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin' });
+
+    const college_id = user.publicMetadata.college_id;
+    // const college_id = 5583;
+
+    const filter = filterType === 'all' ? {
+      college_id
+    } : {
+      college_id,
+      orderStatus: filterType
+    }
+
     const orders = await Order.find(filter);
     // const mapped = orders.map((order) => ({id: order._id, ...order}))
     return res.status(200).json({ status: 'success', orders });
@@ -239,9 +249,9 @@ const updateOrderStatus = async (req, res) => {
     return res.status(400).json({ status: 'failed', message: 'Incomplete Order Details' });
   console.log(id);
   try {
-    const updatedOrder = await Order.findByIdAndUpdate(id, { orderStatus }, { new: true });
+    const updatedOrder = await Order.findByIdAndUpdate(id, { orderStatus }, { new: true, runValidators: true });
 
-    if (updatedOrder.matchedCount === 0) {
+    if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
     console.log(updatedOrder);

@@ -3,21 +3,21 @@ const { clerkClient } = require("@clerk/clerk-sdk-node");
 
 const { getAuth } = require("@clerk/express");
 const { users } = require("@clerk/clerk-sdk-node");
-const { Cashfree } = require("cashfree-pg");
+const { Cashfree, CFEnvironment } = require("cashfree-pg");
 require("dotenv").config();
 const crypto = require("crypto");
 
 const check = async (req, res) => {
-  const { UserEmail, Collegename, UserName, College_id } = req.body;
+  const { UserEmail } = req.body;
+  if (!UserEmail) {
+    return res.status(400).json({ success: false, message: "Email is required" });
+  }
 
   try {
-    // Check if admin with same email or college ID already exists
-    const existingAdmin = await Admin.findOne({
-      $or: [{ email: UserEmail }, { college_id: College_id }],
-    });
-    const existingUser = await User.findOne({
-      $or: [{ email: UserEmail }, { college_id: College_id }],
-    });
+    // Match on email only: an undefined college_id inside $or is cast to {}
+    // and would match every document.
+    const existingAdmin = await Admin.findOne({ email: UserEmail });
+    const existingUser = await User.findOne({ email: UserEmail });
     if (existingAdmin) {
       //This means email exits
       return res.json({
@@ -90,6 +90,13 @@ const addAdmin = async (req, res) => {
 const addUser = async (req, res) => {
   const { userId, UserName, UserEmail, College_id } = req.body;
 
+  // An undefined College_id would be cast to {} and match any admin
+  if (!College_id || !UserEmail) {
+    return res
+      .status(400)
+      .json({ success: false, message: "College ID and email are required" });
+  }
+
   try {
     const checkCollege_id_exits = await Admin.findOne({
       college_id: College_id,
@@ -134,7 +141,10 @@ const addUser = async (req, res) => {
 
 //after clicking checkout
 const addOrder = async (req, res) => {
-  const { items, totalAmount, gmailAccount } = req.body;
+  const { items, totalAmount, gmailAccount, order_id } = req.body;
+  if (!gmailAccount) {
+    return res.status(400).json({ status: false, message: "Email is required" });
+  }
   try {
     const user_id = await User.findOne(
       {
@@ -151,33 +161,65 @@ const addOrder = async (req, res) => {
       }
     );
 
-    if (user_id && college_id) {
-      const addOrder_res = await Order.insertOne({
-        user_id: user_id,
-        college_id: college_id.college_id,
-        items: items,
-        totalAmount: totalAmount,
+    if (!user_id || !college_id) {
+      return res.status(404).json({
+        status: false,
+        message: "User not found",
       });
-      if (addOrder_res) {
-        res.status(200).json({
-          status: true,
-          message: "Order has been placed",
-        });
-      } else {
-        res.status(500).json({
-          status: false,
-          message: "Order has not been placed",
-        });
-      }
+    }
+
+    if (!order_id) {
+      return res.status(400).json({
+        status: false,
+        message: "Payment order ID is required",
+      });
+    }
+
+    // Verify with Cashfree that this order was actually paid for the same amount
+    const { data: paymentOrder } = await cashfree.PGFetchOrder(order_id);
+    if (
+      paymentOrder?.order_status !== "PAID" ||
+      Number(paymentOrder.order_amount) !== Number(totalAmount)
+    ) {
+      return res.status(402).json({
+        status: false,
+        message: "Payment not completed",
+      });
+    }
+
+    const addOrder_res = await Order.insertOne({
+      user_id: user_id,
+      college_id: college_id.college_id,
+      items: items,
+      totalAmount: totalAmount,
+      paymentStatus: "paid",
+    });
+    if (addOrder_res) {
+      res.status(200).json({
+        status: true,
+        message: "Order has been placed",
+      });
+    } else {
+      res.status(500).json({
+        status: false,
+        message: "Order has not been placed",
+      });
     }
   } catch (error) {
     console.log(error);
+    res.status(500).json({
+      status: false,
+      message: "Order has not been placed",
+    });
   }
 };
 
 const displayOrder = async (req, res) => {
   try {
     const { gmailAccount } = req.body;
+    if (!gmailAccount) {
+      return res.status(400).json({ orders: [], message: "Email is required" });
+    }
     const user_id = await User.findOne(
       {
         email: gmailAccount,
@@ -202,25 +244,33 @@ const displayOrder = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(500).json({ orders: [], message: "Error fetching orders" });
   }
 };
 
 const browseOrder = async (req, res) => {
   const { gmailAccount } = req.body;
   try {
-    const college_id = await User.findOne(
-      {
-        email: gmailAccount,
-      },
-      {
-        college_id: 1,
-      }
-    );
+    const college_id = gmailAccount
+      ? await User.findOne(
+          {
+            email: gmailAccount,
+          },
+          {
+            college_id: 1,
+          }
+        )
+      : null;
+    if (!college_id) {
+      return res.json({
+        success: false,
+        message: "User not found",
+      });
+    }
     const items = await Item.find({
       college_id: college_id.college_id,
     });
-    console.log(college_id.college_id);
-    if (college_id && items.length > 0) {
+    if (items.length > 0) {
       res.status(200).json({
         success: true,
         items: items,
@@ -233,6 +283,10 @@ const browseOrder = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching items",
+    });
   }
 };
 
@@ -240,19 +294,22 @@ const deleteAccount = async (req, res) => {
   const { userId } = req.body;
   if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-  const user = await users.getUser(userId);
-
-  const primaryEmail = user.emailAddresses.find(
-    (email) => email.id === user.primaryEmailAddressId
-  );
-  const user_email = primaryEmail?.emailAddress; //Get Registered User_Email from clerk
-
   try {
+    const user = await users.getUser(userId);
+
+    const primaryEmail = user.emailAddresses.find(
+      (email) => email.id === user.primaryEmailAddressId
+    );
+    const user_email = primaryEmail?.emailAddress; //Get Registered User_Email from clerk
+
     await clerkClient.users.deleteUser(userId); //Delete the user data from clerk
-    if(user.publicMetadata.role == 'admin')
-      await Admin.deleteOne({ email: user_email }); //Delete the user data from DB
-    else
-      await User.deleteOne({ email: user_email }); //Delete the user data from DB
+    // Without an email the filter would be cast to {} and delete an arbitrary document
+    if (user_email) {
+      if(user.publicMetadata.role == 'admin')
+        await Admin.deleteOne({ email: user_email }); //Delete the user data from DB
+      else
+        await User.deleteOne({ email: user_email }); //Delete the user data from DB
+    }
 
     return res
       .status(200)
@@ -271,7 +328,7 @@ function generateOrderId() {
   return hash.substring(0, 12);
 }
 const cashfree = new Cashfree(
-  Cashfree.SANDBOX, // or Cashfree.PRODUCTION
+  CFEnvironment.SANDBOX, // or CFEnvironment.PRODUCTION
   process.env.CASHFREE_APP_ID,
   process.env.CASHFREE_SECRET_KEY
 );
