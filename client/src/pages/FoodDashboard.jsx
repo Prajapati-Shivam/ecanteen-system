@@ -14,10 +14,10 @@ import {
 import AddFoodForm from '../components/Food/AddFoodForm';
 import ViewFoodItems from '../components/Food/ViewFoodItems';
 
-import { useUser } from '@clerk/clerk-react';
+import { useAuth } from '@clerk/clerk-react';
 
 function FoodDashboard() {
-  const { user } = useUser();
+  const { getToken } = useAuth();
   const [tab, setTab] = useState('create');
   const [foodForm, setFoodForm] = useState({
     name: '',
@@ -51,8 +51,6 @@ function FoodDashboard() {
     if (name && price && category && image && veg !== undefined) {
       try {
         const formData = new FormData();
-        // console.log(user);
-        formData.append('userId', user.id);
         formData.append('name', name);
         formData.append('price', price);
         formData.append('category', category);
@@ -60,7 +58,9 @@ function FoodDashboard() {
         formData.append('image', image); // ✅ actual File object
 
         setIsSubmitting(true);
-        await axios.post(`${url}/api/admin/addItem`, formData);
+        await axios.post(`${url}/api/admin/addItem`, formData, {
+          headers: { Authorization: `Bearer ${await getToken()}` },
+        });
 
         showSnackbar('Food item added successfully!', 'success');
         // Reload from the server so the new item has its uploaded image URL
@@ -87,8 +87,8 @@ function FoodDashboard() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.post(`${url}/api/admin/fetchItems`, {
-        userId: user.id,
+      const res = await axios.post(`${url}/api/admin/fetchItems`, {}, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
       const items = res.data.items || [];
       const transformed = items.map(({ _id, ...rest }) => ({

@@ -1,14 +1,21 @@
 const { Admin, User, Order, Item } = require("../../models");
 const { clerkClient } = require("@clerk/clerk-sdk-node");
 
-const { getAuth } = require("@clerk/express");
-const { users } = require("@clerk/clerk-sdk-node");
 const { Cashfree, CFEnvironment } = require("cashfree-pg");
 require("dotenv").config();
 const crypto = require("crypto");
 
+// All handlers run behind requireUser, which sets req.clerkUser and req.userEmail
+// from the verified Clerk session token.
+
+const getFullName = (user) =>
+  [user.firstName, user.lastName].filter(Boolean).join(" ");
+
+// Registration endpoints must not let an already-registered user switch role/college
+const alreadyRegistered = (req) => Boolean(req.clerkUser.publicMetadata?.role);
+
 const check = async (req, res) => {
-  const { UserEmail } = req.body;
+  const UserEmail = req.userEmail;
   if (!UserEmail) {
     return res.status(400).json({ success: false, message: "Email is required" });
   }
@@ -46,7 +53,21 @@ const check = async (req, res) => {
 };
 
 const addAdmin = async (req, res) => {
-  const { userId, UserEmail, Collegename, UserName, College_id } = req.body;
+  const { Collegename, College_id } = req.body;
+  const userId = req.clerkUser.id;
+  const UserEmail = req.userEmail;
+
+  if (alreadyRegistered(req)) {
+    return res
+      .status(409)
+      .json({ success: false, message: "Account already registered" });
+  }
+  if (!Collegename || !College_id || !UserEmail) {
+    return res
+      .status(400)
+      .json({ success: false, message: "College name and email are required" });
+  }
+
   try {
     // Use insertOne on the underlying MongoDB collection
     const result = await Admin.insertOne({
@@ -88,8 +109,16 @@ const addAdmin = async (req, res) => {
 };
 
 const addUser = async (req, res) => {
-  const { userId, UserName, UserEmail, College_id } = req.body;
+  const { College_id } = req.body;
+  const userId = req.clerkUser.id;
+  const UserName = getFullName(req.clerkUser) || req.userEmail;
+  const UserEmail = req.userEmail;
 
+  if (alreadyRegistered(req)) {
+    return res
+      .status(409)
+      .json({ success: false, message: "Account already registered" });
+  }
   // An undefined College_id would be cast to {} and match any admin
   if (!College_id || !UserEmail) {
     return res
@@ -141,7 +170,8 @@ const addUser = async (req, res) => {
 
 //after clicking checkout
 const addOrder = async (req, res) => {
-  const { items, totalAmount, gmailAccount, order_id } = req.body;
+  const { items, totalAmount, order_id } = req.body;
+  const gmailAccount = req.userEmail;
   if (!gmailAccount) {
     return res.status(400).json({ status: false, message: "Email is required" });
   }
@@ -216,7 +246,7 @@ const addOrder = async (req, res) => {
 
 const displayOrder = async (req, res) => {
   try {
-    const { gmailAccount } = req.body;
+    const gmailAccount = req.userEmail;
     if (!gmailAccount) {
       return res.status(400).json({ orders: [], message: "Email is required" });
     }
@@ -249,7 +279,7 @@ const displayOrder = async (req, res) => {
 };
 
 const browseOrder = async (req, res) => {
-  const { gmailAccount } = req.body;
+  const gmailAccount = req.userEmail;
   try {
     const college_id = gmailAccount
       ? await User.findOne(
@@ -291,17 +321,11 @@ const browseOrder = async (req, res) => {
 };
 
 const deleteAccount = async (req, res) => {
-  const { userId } = req.body;
-  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+  const user = req.clerkUser;
+  const userId = user.id;
+  const user_email = req.userEmail; //Registered User_Email from clerk
 
   try {
-    const user = await users.getUser(userId);
-
-    const primaryEmail = user.emailAddresses.find(
-      (email) => email.id === user.primaryEmailAddressId
-    );
-    const user_email = primaryEmail?.emailAddress; //Get Registered User_Email from clerk
-
     await clerkClient.users.deleteUser(userId); //Delete the user data from clerk
     // Without an email the filter would be cast to {} and delete an arbitrary document
     if (user_email) {
@@ -333,7 +357,9 @@ const cashfree = new Cashfree(
   process.env.CASHFREE_SECRET_KEY
 );
 const payment = async (req, res) => {
-  const { gmailAccount, Name, totalPrice } = req.body;
+  const { totalPrice } = req.body;
+  const gmailAccount = req.userEmail;
+  const Name = getFullName(req.clerkUser) || gmailAccount;
   try {
     const orderId = generateOrderId();
     const order = {

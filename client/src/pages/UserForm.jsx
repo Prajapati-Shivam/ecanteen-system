@@ -1,4 +1,4 @@
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -22,6 +22,7 @@ import userImg from '../assets/user-form-user.svg';
 
 function UserForm() {
   const { user, isSignedIn, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const navigate = useNavigate();
 
   const [role, setRole] = useState();
@@ -48,9 +49,8 @@ function UserForm() {
     if (user && isSignedIn) {
       (async () => {
         try {
-          const { data } = await axios.post(`${url}/api/auth/check`, {
-            UserName: user.fullName,
-            UserEmail: user.primaryEmailAddress.emailAddress,
+          const { data } = await axios.post(`${url}/api/auth/check`, {}, {
+            headers: { Authorization: `Bearer ${await getToken()}` },
           });
 
           if (data.success === false) {
@@ -70,7 +70,7 @@ function UserForm() {
         }
       })();
     }
-  }, [user, isSignedIn, isLoaded, navigate, url]);
+  }, [user, isSignedIn, isLoaded, navigate, url, getToken]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -79,13 +79,14 @@ function UserForm() {
 
     try {
       if (role === 'admin') {
-        const { data } = await axios.post(`${url}/api/auth/addAdmin`, {
-          userId: user.id,
-          Collegename: inputValue,
-          UserName: user.fullName,
-          UserEmail: user.primaryEmailAddress.emailAddress,
-          College_id: randomId,
-        });
+        const { data } = await axios.post(
+          `${url}/api/auth/addAdmin`,
+          {
+            Collegename: inputValue,
+            College_id: randomId,
+          },
+          { headers: { Authorization: `Bearer ${await getToken()}` } }
+        );
 
         if (data.success) {
           await user.reload();
@@ -95,12 +96,13 @@ function UserForm() {
           setSnackbar('⚠️ ' + data.message, 'error');
         }
       } else {
-        const { data } = await axios.post(`${url}/api/auth/addUser`, {
-          userId: user.id,
-          UserName: user.fullName,
-          UserEmail: user.primaryEmailAddress.emailAddress,
-          College_id: inputValue,
-        });
+        const { data } = await axios.post(
+          `${url}/api/auth/addUser`,
+          {
+            College_id: inputValue,
+          },
+          { headers: { Authorization: `Bearer ${await getToken()}` } }
+        );
 
         if (data.college_id_exists === false) {
           setSnackbar('College ID does not exist', 'error');

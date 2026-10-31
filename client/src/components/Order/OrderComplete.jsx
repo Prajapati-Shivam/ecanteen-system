@@ -20,12 +20,13 @@ import {
   KeyboardArrowUp as ExpandLessIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 
 function OrderRow({ order, onStatusUpdate }) {
   const [open, setOpen] = React.useState(false);
   const [status, setStatus] = React.useState(order.orderStatus);
   const [loading, setLoading] = React.useState(false);
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -40,7 +41,8 @@ function OrderRow({ order, onStatusUpdate }) {
         {
           id: order._id,
           orderStatus: newStatus,
-        }
+        },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
       onStatusUpdate(order._id, newStatus);
     } catch (err) {
@@ -127,6 +129,7 @@ function OrderRow({ order, onStatusUpdate }) {
 export default function OrderComplete() {
   const [orders, setOrders] = React.useState([]);
   const { user } = useUser();
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -137,7 +140,8 @@ export default function OrderComplete() {
       try {
         const response = await axios.post(
           `${url}/api/admin/fetchCompletedOrder`,
-          { userId: user.id }
+          {},
+          { headers: { Authorization: `Bearer ${await getToken()}` } }
         );
         // sort orders by order time in descending order
         const sortedOrders = [...response.data.orders].sort(

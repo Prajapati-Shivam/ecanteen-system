@@ -14,9 +14,11 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 import { useMemo, useState } from 'react';
+import { useAuth } from '@clerk/clerk-react';
 import placeholderImg from '../../assets/placeholder-food.jpg';
 
 const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -59,7 +61,8 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
 
       const { data } = await axios.put(
         `${url}/api/admin/updateItem`,
-        updatedFood
+        updatedFood,
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
       console.log('Update response:', data.item);
       // Keep the same { id, ...rest } shape that FoodDashboard uses for items
@@ -82,6 +85,7 @@ const FoodCardEdit = ({ food, onUpdate, onDelete }) => {
     try {
       const { data } = await axios.delete(`${url}/api/admin/deleteItem`, {
         params: { item_id: food._id || food.id }, // ✅ FIX: must go in params
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
       if (data.message === 'Item deleted successfully') {
         if (onDelete) onDelete(food._id || food.id);

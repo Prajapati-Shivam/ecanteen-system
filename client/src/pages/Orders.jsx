@@ -26,7 +26,7 @@ import {
   LunchDining as VegIcon,
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 
 export default function Orders() {
@@ -39,6 +39,7 @@ export default function Orders() {
     severity: 'success',
   });
   const { user } = useUser();
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -46,11 +47,13 @@ export default function Orders() {
     if (!user) return;
     (async () => {
       try {
-        const email = user.primaryEmailAddress?.emailAddress;
         const { data } = await axios.post(
           `${url}/api/auth/displayOrder`,
-          { gmailAccount: email },
-          { withCredentials: true }
+          {},
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${await getToken()}` },
+          }
         );
 
         const grouped = {};

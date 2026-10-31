@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { clerkMiddleware } = require("@clerk/express");
+const { requireUser } = require("../../middleware/auth");
 
 const authController = require("./auth.controller");
+
+// Identity comes from the Clerk session token, never from the request body
+router.use(requireUser);
 
 // Route to check email existence in db
 router.post("/check", authController.check);

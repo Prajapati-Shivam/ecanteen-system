@@ -13,7 +13,7 @@ import {
   ShoppingCart as CartIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import {
   Typography,
   Card,
@@ -29,6 +29,7 @@ import {
 
 export default function Cart() {
   const { user } = useUser();
+  const { getToken } = useAuth();
 
   const [cartItems, setCartItems] = useState([]);
   const [quantities, setQuantities] = useState({});
@@ -94,16 +95,12 @@ export default function Cart() {
     : 'http://localhost:3001';
 
   async function getsessionId() {
-    const gmailAccount = user?.primaryEmailAddress?.emailAddress;
-    const Name = user?.fullName;
-    console.log(gmailAccount);
-
     try {
-      const res = await axios.post(`${url}/api/auth/payment`, {
-        gmailAccount: gmailAccount,
-        Name: Name,
-        totalPrice: totalPrice,
-      });
+      const res = await axios.post(
+        `${url}/api/auth/payment`,
+        { totalPrice: totalPrice },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
       if (res) {
         console.log('gsid ', res.data.order_id);
         return res.data;
@@ -131,7 +128,6 @@ export default function Cart() {
     const payload = {
       items: transformedItems,
       totalAmount: totalPrice, // Server expects totalAmount
-      gmailAccount,
     };
 
     try {
@@ -153,7 +149,10 @@ export default function Cart() {
 
       const res = await fetch(`${url}/api/auth/addOrder`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await getToken()}`,
+        },
         body: JSON.stringify({ ...payload, order_id: session.order_id }),
         credentials: 'include',
       });

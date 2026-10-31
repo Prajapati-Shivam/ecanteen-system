@@ -2,10 +2,10 @@ const express = require("express");
 const router = express.Router();
 const adminController = require("./admin.controller");
 const upload = require("../../middleware/multer");
+const { requireAdmin } = require("../../middleware/auth");
 
-// const { clerkMiddleware } = require('@clerk/express');
-
-// router.use(clerkMiddleware());
+// Every admin route needs a signed-in admin; req.college_id scopes the data
+router.use(requireAdmin);
 router.post("/addItem", upload, adminController.addItem);
 router.post("/fetchItems", adminController.fetchItems);
 router.delete("/deleteItem", adminController.deleteItem);

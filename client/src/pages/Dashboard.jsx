@@ -32,7 +32,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 
 function Dashboard() {
   const { user } = useUser();
-  const { signOut } = useAuth();
+  const { signOut, getToken } = useAuth();
   const [filterType, setFilterType] = useState('weekdays');
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -53,8 +53,8 @@ function Dashboard() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const { data } = await axios.post(`${url}/api/admin/fetchAllOrder`, {
-          userId: user.id
+        const { data } = await axios.post(`${url}/api/admin/fetchAllOrder`, {}, {
+          headers: { Authorization: `Bearer ${await getToken()}` },
         });
         if (data.status === "success") {
           setOrders(data.orders);
@@ -76,8 +76,8 @@ function Dashboard() {
       return;
 
     try {
-      const { data } = await axios.post(`${url}/api/auth/deleteAccount`, {
-        userId: user.id
+      const { data } = await axios.post(`${url}/api/auth/deleteAccount`, {}, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
 
       if (data.status === 'deleted') {
