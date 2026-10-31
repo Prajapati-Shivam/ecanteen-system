@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import error from '../assets/error.svg'; // Adjust the path as necessary
 
 function Error() {

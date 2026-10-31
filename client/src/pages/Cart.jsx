@@ -13,7 +13,7 @@ import {
   ShoppingCart as CartIcon,
   Delete as DeleteIcon,
 } from '@mui/icons-material';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import {
   Typography,
   Card,
@@ -29,6 +29,7 @@ import {
 
 export default function Cart() {
   const { user } = useUser();
+  const { getToken } = useAuth();
 
   const [cartItems, setCartItems] = useState([]);
   const [quantities, setQuantities] = useState({});
@@ -94,19 +95,15 @@ export default function Cart() {
     : 'http://localhost:3001';
 
   async function getsessionId() {
-    const gmailAccount = user?.primaryEmailAddress?.emailAddress;
-    const Name = user?.fullName;
-    console.log(gmailAccount);
-
     try {
-      const res = await axios.post(`${url}/api/auth/payment`, {
-        gmailAccount: gmailAccount,
-        Name: Name,
-        totalPrice: totalPrice,
-      });
+      const res = await axios.post(
+        `${url}/api/auth/payment`,
+        { totalPrice: totalPrice },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
+      );
       if (res) {
         console.log('gsid ', res.data.order_id);
-        return res.data.payment_session_id;
+        return res.data;
       }
     } catch (error) {
       console.log(error);
@@ -131,30 +128,32 @@ export default function Cart() {
     const payload = {
       items: transformedItems,
       totalAmount: totalPrice, // Server expects totalAmount
-      gmailAccount,
     };
 
     try {
-      const sessionId = await getsessionId();
-      if (!sessionId) return alert('Cashfree not initialized');
+      const session = await getsessionId();
+      if (!cashfree || !session?.payment_session_id)
+        return alert('Cashfree not initialized');
 
       const checkout_opt = {
-        paymentSessionId: sessionId,
+        paymentSessionId: session.payment_session_id,
         redirectTarget: '_modal',
       };
 
-      await cashfree.checkout(checkout_opt).then((response) => {
-        if (response) {
-          alert('Payment Successfull');
-        } else {
-          alert('Payment not Successfull');
-        }
-      });
+      // Cashfree resolves with { error } when the payment fails or the modal is closed
+      const result = await cashfree.checkout(checkout_opt);
+      if (!result || result.error) {
+        alert('Payment not Successfull');
+        return;
+      }
 
       const res = await fetch(`${url}/api/auth/addOrder`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${await getToken()}`,
+        },
+        body: JSON.stringify({ ...payload, order_id: session.order_id }),
         credentials: 'include',
       });
 
@@ -162,6 +161,7 @@ export default function Cart() {
       console.log('Checkout response:', data);
 
       if (res.ok && data.status) {
+        alert('Payment Successfull');
         localStorage.removeItem('cart');
         setCartItems([]);
         setQuantities({});

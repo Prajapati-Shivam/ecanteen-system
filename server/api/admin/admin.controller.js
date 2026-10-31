@@ -2,14 +2,11 @@ const { Item, Order } = require('../../models');
 const cloudinary = require('../../utils/cloudinary');
 const streamifier = require('streamifier'); // <== required for buffer upload
 
-
-const { users } = require('@clerk/clerk-sdk-node');
+// All handlers run behind requireAdmin, which sets req.college_id from the admin's Clerk metadata
 
 const addItem = async (req, res) => {
-  const { userId, name, price, category, veg } = req.body;
-
-  const user = await users.getUser(userId);
-  const college_id = user?.publicMetadata?.college_id;
+  const { name, price, category, veg } = req.body;
+  const college_id = req.college_id;
 
   if (!name || !price || !category || veg === undefined || !req.file) {
     return res
@@ -61,12 +58,7 @@ const addItem = async (req, res) => {
 };
 
 const fetchItems = async (req, res) => {
-  let { college_id } = req.query;
-
-  if (college_id === undefined) {
-    const user = await users.getUser(req.body.userId);
-    college_id = user?.publicMetadata?.college_id;
-  }
+  const college_id = req.college_id;
 
   const {
     filter_name,
@@ -151,7 +143,10 @@ const deleteItem = async (req, res) => {
   }
 
   try {
-    const deletedItem = await Item.findByIdAndDelete(item_id);
+    const deletedItem = await Item.findOneAndDelete({
+      _id: item_id,
+      college_id: req.college_id,
+    });
     if (!deletedItem) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -184,7 +179,15 @@ const updateItem = async (req, res) => {
     availability: availability,
   };
   try {
-    const updatedItem = await Item.findByIdAndUpdate(item_id, updatedData);
+    const updatedItem = await Item.findOneAndUpdate(
+      { _id: item_id, college_id: req.college_id },
+      updatedData,
+      {
+        new: true,
+        runValidators: true,
+        projection: { college_id: 0, __v: 0 },
+      }
+    );
     if (!updatedItem) {
       return res.status(404).json({ message: 'Item not found' });
     }
@@ -201,25 +204,17 @@ const updateItem = async (req, res) => {
 };
 
 const fetchOrders = async (req, res, filterType) => {
-  const { userId } = req.body;
-  if (!userId)
-    return res.status(400).json({ messgae: 'Login First' });
-
-  const user = await users.getUser(userId);
-  if (user?.publicMetadata?.role === 'student')
-    return res.status(400).json({ status: 'Unauthorized', message: 'You are not an Admin' });
-
-  const college_id = user?.publicMetadata?.college_id;
-  // const college_id = 5583;
-
-  const filter = filterType === 'all' ? {
-    college_id
-  } : {
-    college_id,
-    orderStatus: filterType
-  }
-
   try {
+    const college_id = req.college_id;
+    // const college_id = 5583;
+
+    const filter = filterType === 'all' ? {
+      college_id
+    } : {
+      college_id,
+      orderStatus: filterType
+    }
+
     const orders = await Order.find(filter);
     // const mapped = orders.map((order) => ({id: order._id, ...order}))
     return res.status(200).json({ status: 'success', orders });
@@ -239,9 +234,13 @@ const updateOrderStatus = async (req, res) => {
     return res.status(400).json({ status: 'failed', message: 'Incomplete Order Details' });
   console.log(id);
   try {
-    const updatedOrder = await Order.findByIdAndUpdate(id, { orderStatus }, { new: true });
+    const updatedOrder = await Order.findOneAndUpdate(
+      { _id: id, college_id: req.college_id },
+      { orderStatus },
+      { new: true, runValidators: true }
+    );
 
-    if (updatedOrder.matchedCount === 0) {
+    if (!updatedOrder) {
       return res.status(404).json({ message: 'Order not found' });
     }
     console.log(updatedOrder);

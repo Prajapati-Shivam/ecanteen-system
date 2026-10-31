@@ -20,12 +20,13 @@ import {
   KeyboardArrowUp as ExpandLessIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 
 function OrderRow({ order, onStatusUpdate }) {
   const [open, setOpen] = React.useState(false);
   const [status, setStatus] = React.useState(order.orderStatus);
   const [loading, setLoading] = React.useState(false);
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -40,11 +41,13 @@ function OrderRow({ order, onStatusUpdate }) {
         {
           id: order._id,
           orderStatus: newStatus,
-        }
+        },
+        { headers: { Authorization: `Bearer ${await getToken()}` } }
       );
       onStatusUpdate(order._id, newStatus);
     } catch (err) {
       console.error('Failed to update status:', err);
+      setStatus(order.orderStatus); // revert the dropdown to the saved status
       alert('Failed to update order status');
     } finally {
       setLoading(false);
@@ -126,6 +129,7 @@ function OrderRow({ order, onStatusUpdate }) {
 export default function OrderPending() {
   const [orders, setOrders] = React.useState([]);
   const { user } = useUser();
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -135,7 +139,8 @@ export default function OrderPending() {
 
       try {
         const response = await axios.post(`${url}/api/admin/fetchActiveOrder`, 
-          { userId: user.id }
+          {},
+          { headers: { Authorization: `Bearer ${await getToken()}` } }
         );
 
         // sort orders by order time in descending order
@@ -155,13 +160,7 @@ export default function OrderPending() {
     setOrders((prev) =>
       prev.map((order) =>
         order._id === id
-          ? {
-              ...order,
-              items: order.items.map((item) => ({
-                ...item,
-                status: newStatus,
-              })),
-            }
+          ? { ...order, orderStatus: newStatus }
           : order
       )
     );

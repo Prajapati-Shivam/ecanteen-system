@@ -26,7 +26,7 @@ import {
   LunchDining as VegIcon,
   ExpandMore as ExpandMoreIcon,
 } from '@mui/icons-material';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 
 export default function Orders() {
@@ -39,6 +39,7 @@ export default function Orders() {
     severity: 'success',
   });
   const { user } = useUser();
+  const { getToken } = useAuth();
   const url = import.meta.env.PROD
     ? import.meta.env.VITE_API_URL
     : 'http://localhost:3001';
@@ -46,18 +47,20 @@ export default function Orders() {
     if (!user) return;
     (async () => {
       try {
-        const email = user.primaryEmailAddress?.emailAddress;
         const { data } = await axios.post(
           `${url}/api/auth/displayOrder`,
-          { gmailAccount: email },
-          { withCredentials: true }
+          {},
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${await getToken()}` },
+          }
         );
 
         const grouped = {};
         (data.orders || []).forEach((order) => {
           const status = order.orderStatus || 'active';
           const dt = new Date(order.orderTime || Date.now());
-          const date = dt.toISOString().split('T')[0];
+          const date = dt.toLocaleDateString('en-CA'); // local YYYY-MM-DD, same timezone as `time`
           const time = dt.toLocaleTimeString('en-GB', {
             hour: '2-digit',
             minute: '2-digit',

@@ -8,11 +8,12 @@ import {
   CircularProgress,
 } from '@mui/material';
 import axios from 'axios';
-import { useUser } from '@clerk/clerk-react';
+import { useAuth, useUser } from '@clerk/clerk-react';
 import FoodCard from '../components/Food/FoodCard';
 
 export default function Browse() {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState('');
   const [quantities, setQuantities] = useState({});
@@ -35,8 +36,11 @@ export default function Browse() {
       try {
         const response = await axios.post(
           `${url}/api/auth/browseOrder`,
-          { gmailAccount: user?.primaryEmailAddress?.emailAddress },
-          { withCredentials: true }
+          {},
+          {
+            withCredentials: true,
+            headers: { Authorization: `Bearer ${await getToken()}` },
+          }
         );
 
         if (response.data.success) {
@@ -122,7 +126,10 @@ export default function Browse() {
           type='text'
           placeholder='Search food items...'
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setCurrentPage(1);
+          }}
           className='w-full p-2 text-black border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
         />
       </Box>

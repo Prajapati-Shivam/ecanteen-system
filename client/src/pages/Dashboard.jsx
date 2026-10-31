@@ -32,7 +32,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 
 function Dashboard() {
   const { user } = useUser();
-  const { signOut } = useAuth();
+  const { signOut, getToken } = useAuth();
   const [filterType, setFilterType] = useState('weekdays');
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -53,8 +53,8 @@ function Dashboard() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const { data } = await axios.post(`${url}/api/admin/fetchAllOrder`, {
-          userId: user.id
+        const { data } = await axios.post(`${url}/api/admin/fetchAllOrder`, {}, {
+          headers: { Authorization: `Bearer ${await getToken()}` },
         });
         if (data.status === "success") {
           setOrders(data.orders);
@@ -76,8 +76,8 @@ function Dashboard() {
       return;
 
     try {
-      const { data } = await axios.post(`${url}/api/auth/deleteAccount`, {
-        userId: user.id
+      const { data } = await axios.post(`${url}/api/auth/deleteAccount`, {}, {
+        headers: { Authorization: `Bearer ${await getToken()}` },
       });
 
       if (data.status === 'deleted') {
@@ -119,7 +119,7 @@ function Dashboard() {
   const filteredOrders = orders.filter((order) => {
   if (!order.orderTime) return false;
 
-  const date = dayjs(order.orderTime).add(5.5, "hour");
+  const date = dayjs(order.orderTime); // dayjs already converts to the browser's local time
   const today = dayjs();
 
   switch (filterType) {
@@ -140,7 +140,7 @@ function Dashboard() {
 });
 
  const ordersToday = orders.filter((order) => {
-  const created = dayjs(order.orderTime).add(5.5, "hour"); // Convert UTC to IST
+  const created = dayjs(order.orderTime); // dayjs already converts to the browser's local time
   const today = dayjs().startOf("day");
   const tomorrow = dayjs().add(1, "day").startOf("day");
 
@@ -155,6 +155,29 @@ function Dashboard() {
       itemFrequencyByFilter[name] = (itemFrequencyByFilter[name] || 0) + 1;
     });
   });
+
+  const handleExport = () => {
+    if (!orders.length) return showSnackbar("No orders to export", "info");
+
+    const header = ["Order ID", "Order Time", "Items", "Total Amount", "Order Status", "Payment Status"];
+    const rows = orders.map((order) => [
+      order._id,
+      dayjs(order.orderTime).format("YYYY-MM-DD HH:mm"),
+      (order.items || []).map((item) => `${item.name} x${item.quantity}`).join("; "),
+      order.totalAmount,
+      order.orderStatus,
+      order.paymentStatus,
+    ]);
+    const csv = [header, ...rows]
+      .map((row) => row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    link.download = `orders-${dayjs().format("YYYY-MM-DD")}.csv`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 0);
+  };
 
   const getTopItems = (obj, top = 5) =>
     Object.entries(obj)
@@ -197,7 +220,7 @@ function Dashboard() {
           </Typography>
           <div className='flex items-center gap-x-6'>
             <Button
-              onClick={console.log('downloaded')}
+              onClick={handleExport}
               variant='contained'
               className='bg-gradient-to-tr from-green-400 to-blue-500'
               startIcon={<DownloadIcon />}

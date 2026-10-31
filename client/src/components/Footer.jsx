@@ -69,8 +69,7 @@ function Footer() {
           {/* Contact */}
           <div>
             <h3 className='text-xl font-semibold mb-4'>Contact Us</h3>
-            <p className='text-gray-700'>Email: support@ecanteen.in</p>
-            <p className='text-gray-700'>Phone: +91-98765-43210</p>
+            <p className='text-gray-700'>Email: siddharthsurve29@gmail.com</p>
             <p className='text-gray-700 mt-2'>
               Available: Mon - Sat, 9AM - 6PM
             </p>
